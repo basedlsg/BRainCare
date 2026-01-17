@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(adb devices:*)",
+      "Bash(C:Users13107AppDataLocalAndroidSdkplatform-toolsadb.exe devices)",
+      "Bash(npm run android:*)",
+      "Bash(cmd.exe /c \"java -version\")",
+      "Bash(cmd.exe /c:*)",
+      "Bash(npm start)",
+      "Bash(npm install:*)",
+      "WebSearch",
+      "Bash(npx react-native config)",
+      "WebFetch(domain:github.com)",
+      "Bash(pdftotext:*)",
+      "Bash(nul)",
+      "Bash(gradlew.bat:*)",
+      "Bash(npx tsc --noEmit)",
+      "Bash(C:Users13107AppDataLocalAndroidSdkplatform-toolsadb.exe devices -l)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
