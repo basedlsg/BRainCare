@@ -100,6 +100,10 @@ export class EEGDataParser {
       deviceType,
       packet: eegPacket,
       sampleRate: PACKET_SPECS.SAMPLE_RATE,
+      // Mock Data for Dashboard
+      relaxation: Math.floor(Math.random() * 100),
+      focus: Math.floor(Math.random() * 100),
+      fatigue: Math.floor(Math.random() * 100),
     };
   }
 

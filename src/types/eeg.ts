@@ -41,6 +41,10 @@ export interface ParsedEEGData {
   deviceType: DeviceType;
   packet: EEGPacket;
   sampleRate: number; // Hz
+  // Wellness Metrics (0-100)
+  relaxation?: number;
+  focus?: number;
+  fatigue?: number;
 }
 
 export interface EEGWaveformDataPoint {

@@ -15,8 +15,13 @@ import EEGWaveformChart from '../components/EEGWaveformChart';
 import EEGDataDisplay from '../components/EEGDataDisplay';
 import { useEEGData } from '../hooks/useEEGData';
 import { DeviceType } from '../types/eeg';
+import { useLanguage } from '../i18n/LanguageContext';
+import { useSettings } from '../contexts/SettingsContext';
+import ConsumerModeScreen from './ConsumerModeScreen';
 
 const AssessmentScreen = () => {
+  const { t } = useLanguage();
+  const { showRawWaveforms } = useSettings();
   const [showCustomerService, setShowCustomerService] = useState(false);
   const [showBleDrawer, setShowBleDrawer] = useState(false);
 
@@ -56,7 +61,7 @@ const AssessmentScreen = () => {
     >
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>健康评估</Text>
+        <Text style={styles.headerTitle}>{t('assessment_title')}</Text>
         <TouchableOpacity
           style={styles.customerServiceBtn}
           onPress={() => setShowCustomerService(true)}
@@ -74,30 +79,40 @@ const AssessmentScreen = () => {
         onPress={() => setShowBleDrawer(true)}
       />
 
-      {/* Real-time EEG Waveform */}
+      {/* Real-time EEG Waveform or Consumer Dashboard */}
       {isConnected && (
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>实时脑电波形</Text>
-            <View style={styles.statusIndicator}>
-              <View style={[styles.statusDot, { backgroundColor: theme.colors.success }]} />
-              <Text style={styles.statusText}>
-                {statistics.currentFrameRate} Hz | {waveformData.length} 点
-              </Text>
-            </View>
-          </View>
-          <EEGWaveformChart
-            data={waveformData}
-            deviceType={latestData?.deviceType || DeviceType.UNKNOWN}
-            maxDataPoints={2500}
-          />
+          {showRawWaveforms ? (
+            <>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>{t('realtime_wave')}</Text>
+                <View style={styles.statusIndicator}>
+                  <View style={[styles.statusDot, { backgroundColor: theme.colors.success }]} />
+                  <Text style={styles.statusText}>
+                    {statistics.currentFrameRate} Hz | {waveformData.length} {t('points')}
+                  </Text>
+                </View>
+              </View>
+              <EEGWaveformChart
+                data={waveformData}
+                deviceType={latestData?.deviceType || DeviceType.UNKNOWN}
+                maxDataPoints={2500}
+              />
+            </>
+          ) : (
+            <ConsumerModeScreen
+              relaxation={latestData?.relaxation || 0}
+              focus={latestData?.focus || 0}
+              fatigue={latestData?.fatigue || 0}
+            />
+          )}
         </View>
       )}
 
-      {/* Real-time EEG Data Display */}
-      {isConnected && (
+      {/* Real-time EEG Data Display (Only in Developer Mode?) */}
+      {isConnected && showRawWaveforms && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>实时脑电数据</Text>
+          <Text style={styles.sectionTitle}>{t('realtime_data')}</Text>
           <EEGDataDisplay data={latestData} />
         </View>
       )}

@@ -16,13 +16,16 @@ interface CustomerServiceProps {
   onClose: () => void;
 }
 
+import { useLanguage } from '../i18n/LanguageContext';
+
 const CustomerService: React.FC<CustomerServiceProps> = ({ visible, onClose }) => {
+  const { t } = useLanguage();
   const [showContactInfo, setShowContactInfo] = useState(false);
 
   const handleAIAssistant = () => {
     onClose();
     // 这里可以导航到AI助手页面或打开AI聊天
-    Alert.alert('AI助手', '正在为您启动智能客服...');
+    Alert.alert(t('cs_alert_ai_title'), t('cs_alert_ai_msg'));
   };
 
   const handleManualSupport = () => {
@@ -32,14 +35,14 @@ const CustomerService: React.FC<CustomerServiceProps> = ({ visible, onClose }) =
   const handleCall = () => {
     const phoneNumber = '400-123-4567';
     Linking.openURL(`tel:${phoneNumber}`).catch(() => {
-      Alert.alert('提示', '无法拨打电话，请手动拨打：' + phoneNumber);
+      Alert.alert(t('ns_tips_title'), t('cs_alert_call_fail') + phoneNumber);
     });
   };
 
   const handleWechat = () => {
-    Alert.alert('客服微信', '请添加微信号：BrainCare_Service', [
-      { text: '取消', style: 'cancel' },
-      { text: '复制微信号', onPress: () => console.log('Copy WeChat ID') },
+    Alert.alert(t('cs_alert_wechat_title'), t('cs_alert_wechat_msg'), [
+      { text: t('action_cancel'), style: 'cancel' },
+      { text: t('cs_action_copy'), onPress: () => console.log('Copy WeChat ID') },
     ]);
   };
 
@@ -53,7 +56,7 @@ const CustomerService: React.FC<CustomerServiceProps> = ({ visible, onClose }) =
       <View style={styles.contactModalOverlay}>
         <View style={styles.contactModalContent}>
           <View style={styles.contactHeader}>
-            <Text style={styles.contactTitle}>人工客服</Text>
+            <Text style={styles.contactTitle}>{t('cs_title')}</Text>
             <TouchableOpacity
               style={styles.closeButton}
               onPress={() => setShowContactInfo(false)}
@@ -65,29 +68,29 @@ const CustomerService: React.FC<CustomerServiceProps> = ({ visible, onClose }) =
           <View style={styles.contactItem}>
             <View style={styles.contactItemHeader}>
               <Icon name="call-outline" size={20} color={theme.colors.primary} />
-              <Text style={styles.contactItemTitle}>客服电话</Text>
+              <Text style={styles.contactItemTitle}>{t('cs_phone_title')}</Text>
             </View>
             <Text style={styles.contactItemValue}>400-123-4567</Text>
             <TouchableOpacity style={styles.contactAction} onPress={handleCall}>
-              <Text style={styles.contactActionText}>立即拨打</Text>
+              <Text style={styles.contactActionText}>{t('cs_call_now')}</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.contactItem}>
             <View style={styles.contactItemHeader}>
               <Icon name="chatbubbles-outline" size={20} color={theme.colors.success} />
-              <Text style={styles.contactItemTitle}>商务微信</Text>
+              <Text style={styles.contactItemTitle}>{t('cs_wechat_title')}</Text>
             </View>
             <Text style={styles.contactItemValue}>BrainCare_Service</Text>
             <TouchableOpacity style={styles.contactAction} onPress={handleWechat}>
-              <Text style={styles.contactActionText}>添加微信</Text>
+              <Text style={styles.contactActionText}>{t('cs_add_wechat')}</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.workingHours}>
             <Icon name="time-outline" size={16} color={theme.colors.textSecondary} />
             <Text style={styles.workingHoursText}>
-              工作时间：周一至周五 9:00-18:00
+              {t('cs_working_hours')}
             </Text>
           </View>
         </View>
@@ -119,8 +122,8 @@ const CustomerService: React.FC<CustomerServiceProps> = ({ visible, onClose }) =
                   <Icon name="chatbubbles" size={24} color={theme.colors.primary} />
                 </View>
                 <View style={styles.menuTextContainer}>
-                  <Text style={styles.menuTitle}>智能客服</Text>
-                  <Text style={styles.menuSubtitle}>AI助手为您解答问题</Text>
+                  <Text style={styles.menuTitle}>{t('cs_ai_title')}</Text>
+                  <Text style={styles.menuSubtitle}>{t('cs_ai_subtitle')}</Text>
                 </View>
                 <Icon name="chevron-forward" size={20} color={theme.colors.textSecondary} />
               </View>
@@ -138,8 +141,8 @@ const CustomerService: React.FC<CustomerServiceProps> = ({ visible, onClose }) =
                   <Icon name="person" size={24} color={theme.colors.success} />
                 </View>
                 <View style={styles.menuTextContainer}>
-                  <Text style={styles.menuTitle}>转人工</Text>
-                  <Text style={styles.menuSubtitle}>联系专业客服人员</Text>
+                  <Text style={styles.menuTitle}>{t('cs_manual_title')}</Text>
+                  <Text style={styles.menuSubtitle}>{t('cs_manual_subtitle')}</Text>
                 </View>
                 <Icon name="chevron-forward" size={20} color={theme.colors.textSecondary} />
               </View>
@@ -165,7 +168,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.lg,
     marginHorizontal: theme.spacing.xl,
     overflow: 'hidden',
-    ...theme.shadows.medium,
+    ...theme.shadows.md,
   },
   menuItem: {
     padding: theme.spacing.lg,
@@ -213,7 +216,7 @@ const styles = StyleSheet.create({
     marginHorizontal: theme.spacing.lg,
     padding: theme.spacing.lg,
     width: '85%',
-    ...theme.shadows.heavy,
+    ...theme.shadows.lg,
   },
   contactHeader: {
     flexDirection: 'row',

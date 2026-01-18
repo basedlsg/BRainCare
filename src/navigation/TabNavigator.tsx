@@ -2,31 +2,33 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { theme } from '../styles/theme';
+import { useLanguage } from '../i18n/LanguageContext';
 
-import HomeScreen from '../screens/HomeScreen';
-import AssessmentScreen from '../screens/AssessmentScreen';
-import WellnessScreen from '../screens/WellnessScreen';
+// Screen imports (will be renamed/refactored)
+import HomeScreen from '../screens/HomeScreen'; // Will become TodayScreen
+import WellnessScreen from '../screens/WellnessScreen'; // Will become TherapiesScreen
 import RecordsScreen from '../screens/RecordsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
 const TabNavigator = () => {
+  const { t } = useLanguage();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: string;
 
-          if (route.name === '首页') {
-            iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === '评估') {
-            iconName = focused ? 'pulse' : 'pulse-outline';
-          } else if (route.name === '理疗') {
-            iconName = focused ? 'medical' : 'medical-outline';
-          } else if (route.name === '记录') {
+          // New 4-tab navigation icons
+          if (route.name === 'Today') {
+            iconName = focused ? 'today' : 'today-outline';
+          } else if (route.name === 'Therapies') {
+            iconName = focused ? 'leaf' : 'leaf-outline';
+          } else if (route.name === 'Records') {
             iconName = focused ? 'stats-chart' : 'stats-chart-outline';
-          } else if (route.name === '我的') {
+          } else if (route.name === 'Profile') {
             iconName = focused ? 'person' : 'person-outline';
           } else {
             iconName = 'help-outline';
@@ -52,11 +54,26 @@ const TabNavigator = () => {
         headerShown: false,
       })}
     >
-      <Tab.Screen name="首页" component={HomeScreen} />
-      <Tab.Screen name="评估" component={AssessmentScreen} />
-      <Tab.Screen name="理疗" component={WellnessScreen} />
-      <Tab.Screen name="记录" component={RecordsScreen} />
-      <Tab.Screen name="我的" component={ProfileScreen} />
+      <Tab.Screen
+        name="Today"
+        component={HomeScreen}
+        options={{ tabBarLabel: t('tab_today') }}
+      />
+      <Tab.Screen
+        name="Therapies"
+        component={WellnessScreen}
+        options={{ tabBarLabel: t('tab_therapies') }}
+      />
+      <Tab.Screen
+        name="Records"
+        component={RecordsScreen}
+        options={{ tabBarLabel: t('tab_records') }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{ tabBarLabel: t('tab_profile') }}
+      />
     </Tab.Navigator>
   );
 };

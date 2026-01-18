@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,12 +11,14 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
-import {BleManager, Device, State} from 'react-native-ble-plx';
+import { BleManager, Device, State } from 'react-native-ble-plx';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {theme} from '../styles/theme';
-import {Buffer} from 'buffer';
+import { theme } from '../styles/theme';
+import { Buffer } from 'buffer';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const BluetoothDebugScreen = () => {
+  const { t } = useLanguage();
   const [bleManager] = useState(() => new BleManager());
   const [devices, setDevices] = useState<Device[]>([]);
   const [filteredDevices, setFilteredDevices] = useState<Device[]>([]);
@@ -136,7 +138,7 @@ const BluetoothDebugScreen = () => {
 
     bleManager.startDeviceScan(
       null, // 扫描所有设备
-      {allowDuplicates: true},
+      { allowDuplicates: true },
       (error, device) => {
         if (error) {
           console.error('❌ [BluetoothDebug] Scan error:', error);
@@ -581,7 +583,7 @@ const BluetoothDebugScreen = () => {
   };
 
   // 渲染设备项
-  const renderDevice = ({item}: {item: Device}) => {
+  const renderDevice = ({ item }: { item: Device }) => {
     const isConnected = connectedDevice?.id === item.id;
     const deviceName = item.name || item.localName || 'Unknown Device';
 
@@ -606,7 +608,7 @@ const BluetoothDebugScreen = () => {
             <Text style={styles.deviceRssi}>{item.rssi} dBm</Text>
             {isConnected && (
               <View style={styles.connectedBadge}>
-                <Text style={styles.connectedText}>已连接</Text>
+                <Text style={styles.connectedText}>{t('debug_connected')}</Text>
               </View>
             )}
           </View>
@@ -618,13 +620,13 @@ const BluetoothDebugScreen = () => {
               onPress={() => setShowServices(!showServices)}>
               <Icon name="list-outline" size={16} color={theme.colors.primary} />
               <Text style={styles.servicesButtonText}>
-                {showServices ? '隐藏' : '查看'}服务 ({services.length})
+                {showServices ? t('action_hide') : t('action_view')} {t('debug_services')} ({services.length})
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.disconnectButton}
               onPress={disconnectDevice}>
-              <Text style={styles.disconnectText}>断开连接</Text>
+              <Text style={styles.disconnectText}>{t('debug_disconnect')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -643,7 +645,7 @@ const BluetoothDebugScreen = () => {
             color={bleState === State.PoweredOn ? theme.colors.success : theme.colors.error}
           />
           <Text style={styles.statusText}>
-            {bleState === State.PoweredOn ? '蓝牙已开启' : '蓝牙未开启'}
+            {bleState === State.PoweredOn ? t('debug_ble_on') : t('debug_ble_off')}
           </Text>
         </View>
         <View style={styles.statusItem}>
@@ -683,7 +685,7 @@ const BluetoothDebugScreen = () => {
           disabled={isScanning}>
           <Icon name="search" size={20} color="white" />
           <Text style={styles.buttonText}>
-            {isScanning ? '扫描中...' : '开始扫描'}
+            {isScanning ? t('debug_scan_scanning') : t('debug_scan_start')}
           </Text>
         </TouchableOpacity>
 
@@ -715,13 +717,13 @@ const BluetoothDebugScreen = () => {
                 color="white"
               />
               <Text style={styles.dataButtonText}>
-                {isSubscribed ? '取消订阅' : '订阅数据'}
+                {isSubscribed ? t('debug_unsubscribe') : t('debug_subscribe')}
               </Text>
             </TouchableOpacity>
           </View>
 
           {/* 测试按钮 */}
-          <View style={[styles.dataControls, {marginTop: 10}]}>
+          <View style={[styles.dataControls, { marginTop: 10 }]}>
             <TouchableOpacity
               style={[styles.dataButton, styles.testButton]}
               onPress={manuallyEnableCCCD}>
@@ -735,7 +737,7 @@ const BluetoothDebugScreen = () => {
               <Text style={styles.dataButtonText}>测试读取</Text>
             </TouchableOpacity>
           </View>
-          <View style={[styles.dataControls, {marginTop: 10}]}>
+          <View style={[styles.dataControls, { marginTop: 10 }]}>
             <TouchableOpacity
               style={[styles.dataButton, useWriteWithoutResponse ? styles.dataButtonActive : styles.testButton]}
               onPress={() => setUseWriteWithoutResponse(!useWriteWithoutResponse)}>
@@ -748,7 +750,7 @@ const BluetoothDebugScreen = () => {
 
           {/* 自定义命令输入 */}
           {isSubscribed && (
-            <View style={{marginTop: 10}}>
+            <View style={{ marginTop: 10 }}>
               <Text style={styles.commandInputLabel}>自定义命令:</Text>
               <View style={styles.commandInputContainer}>
                 <TextInput
@@ -759,7 +761,7 @@ const BluetoothDebugScreen = () => {
                   placeholderTextColor={theme.colors.textSecondary}
                 />
                 <TouchableOpacity
-                  style={[styles.dataButton, styles.sendButton, {flex: 0, paddingHorizontal: 20}]}
+                  style={[styles.dataButton, styles.sendButton, { flex: 0, paddingHorizontal: 20 }]}
                   onPress={startDataStream}>
                   <Icon name="send" size={18} color="white" />
                   <Text style={styles.dataButtonText}>发送</Text>
@@ -770,7 +772,7 @@ const BluetoothDebugScreen = () => {
 
           {/* 快捷命令按钮 */}
           {isSubscribed && (
-            <View style={[styles.dataControls, {marginTop: 10}]}>
+            <View style={[styles.dataControls, { marginTop: 10 }]}>
               <TouchableOpacity
                 style={[styles.dataButton, styles.startButton]}
                 onPress={() => sendCustomCommand('b')}>
@@ -806,7 +808,7 @@ const BluetoothDebugScreen = () => {
             contentContainerStyle={styles.dataLogContent}
             ref={scrollViewRef => {
               if (scrollViewRef) {
-                scrollViewRef.scrollToEnd({animated: true});
+                scrollViewRef.scrollToEnd({ animated: true });
               }
             }}>
             {dataLog.map((log, index) => (
@@ -835,8 +837,8 @@ const BluetoothDebugScreen = () => {
               {isScanning
                 ? '正在搜索设备...'
                 : filterText
-                ? `未找到包含 "${filterText}" 的设备`
-                : '点击开始扫描按钮'}
+                  ? `未找到包含 "${filterText}" 的设备`
+                  : '点击开始扫描按钮'}
             </Text>
             {!isScanning && (
               <Text style={styles.emptyHint}>

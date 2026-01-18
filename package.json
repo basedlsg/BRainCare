@@ -23,6 +23,8 @@
     "react-native-gesture-handler": "^2.27.2",
     "react-native-gifted-charts": "^1.4.65",
     "react-native-linear-gradient": "^2.8.3",
+    "react-native-mmkv": "^4.1.1",
+    "react-native-nitro-modules": "^0.33.2",
     "react-native-permissions": "^5.4.4",
     "react-native-safe-area-context": "^5.5.2",
     "react-native-screens": "^4.13.1",

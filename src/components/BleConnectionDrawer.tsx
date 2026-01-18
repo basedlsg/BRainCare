@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,9 +11,10 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import {BleManager, Device, State} from 'react-native-ble-plx';
+import { BleManager, Device, State } from 'react-native-ble-plx';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {theme} from '../styles/theme';
+import { theme } from '../styles/theme';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface BleConnectionDrawerProps {
   visible: boolean;
@@ -26,6 +27,7 @@ const BleConnectionDrawer: React.FC<BleConnectionDrawerProps> = ({
   onClose,
   onDeviceConnected,
 }) => {
+  const { t } = useLanguage();
   const [devices, setDevices] = useState<Device[]>([]);
   const [isScanning, setIsScanning] = useState(false);
   const [bleState, setBleState] = useState<State>(State.Unknown);
@@ -110,7 +112,7 @@ const BleConnectionDrawer: React.FC<BleConnectionDrawerProps> = ({
   const startScan = async () => {
     const bleManager = getBleManager();
     if (!bleManager) {
-      Alert.alert('蓝牙错误', '蓝牙管理器初始化失败，请重启应用');
+      Alert.alert(t('ble_error_title'), t('ble_error_manager'));
       return;
     }
 
@@ -119,17 +121,14 @@ const BleConnectionDrawer: React.FC<BleConnectionDrawerProps> = ({
     // 1. 检查权限
     const hasPermission = await requestPermissions();
     if (!hasPermission) {
-      Alert.alert('权限不足', '请在设置中授予蓝牙和位置权限');
+      Alert.alert(t('ble_permission_title'), t('ble_error_permission'));
       return;
     }
 
     // 2. 检查蓝牙状态
     const state = await bleManager.state();
     if (state !== State.PoweredOn) {
-      Alert.alert(
-        '蓝牙未开启',
-        `请确保：\n1. 蓝牙已开启\n2. 位置服务（GPS）已开启`,
-      );
+      Alert.alert(t('ble_not_enabled_title'), t('ble_error_not_enabled'));
       return;
     }
 
@@ -142,12 +141,12 @@ const BleConnectionDrawer: React.FC<BleConnectionDrawerProps> = ({
 
     bleManager.startDeviceScan(
       null, // 扫描所有设备
-      {allowDuplicates: true}, // 允许重复发现设备以更新 RSSI
+      { allowDuplicates: true }, // 允许重复发现设备以更新 RSSI
       (error, device) => {
         if (error) {
           console.error('❌ Scan error:', error);
           setIsScanning(false);
-          Alert.alert('扫描错误', error.message);
+          Alert.alert(t('ble_error_scan'), error.message);
           return;
         }
 
@@ -218,18 +217,18 @@ const BleConnectionDrawer: React.FC<BleConnectionDrawerProps> = ({
       onClose();
     } catch (error: any) {
       console.error('❌ Connection error:', error);
-      Alert.alert('连接失败', error.message || '无法连接到设备');
+      Alert.alert(t('ble_connect_failed'), error.message || t('ble_connect_failed_msg'));
     } finally {
       setConnectingDeviceId(null);
     }
   };
 
   // 渲染设备项
-  const renderDevice = ({item}: {item: Device}) => {
+  const renderDevice = ({ item }: { item: Device }) => {
     const isConnecting = connectingDeviceId === item.id;
     const deviceName = item.name || item.localName || 'Unknown Device';
     const isNVBrainRF = deviceName.toLowerCase().includes('nv-brainrf') ||
-                        deviceName.toLowerCase().includes('brainrf');
+      deviceName.toLowerCase().includes('brainrf');
 
     return (
       <TouchableOpacity
@@ -256,14 +255,14 @@ const BleConnectionDrawer: React.FC<BleConnectionDrawerProps> = ({
             </Text>
             {isNVBrainRF && (
               <View style={styles.recommendedBadge}>
-                <Text style={styles.recommendedText}>推荐</Text>
+                <Text style={styles.recommendedText}>{t('ble_recommended')}</Text>
               </View>
             )}
           </View>
           <Text style={styles.deviceId} numberOfLines={1}>
             {item.id}
           </Text>
-          <Text style={styles.deviceRssi}>信号强度: {item.rssi} dBm</Text>
+          <Text style={styles.deviceRssi}>{t('ble_signal_strength')}: {item.rssi} dBm</Text>
         </View>
         {isConnecting ? (
           <ActivityIndicator size="small" color={theme.colors.primary} />
@@ -295,7 +294,7 @@ const BleConnectionDrawer: React.FC<BleConnectionDrawerProps> = ({
           <View style={styles.header}>
             <View style={styles.dragIndicator} />
             <View style={styles.headerContent}>
-              <Text style={styles.title}>连接蓝牙设备</Text>
+              <Text style={styles.title}>{t('ble_drawer_title')}</Text>
               <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                 <Icon name="close" size={24} color={theme.colors.text} />
               </TouchableOpacity>
@@ -314,7 +313,7 @@ const BleConnectionDrawer: React.FC<BleConnectionDrawerProps> = ({
                   ]}
                 />
                 <Text style={styles.statusText}>
-                  蓝牙状态: {bleState === State.PoweredOn ? '开启' : '关闭'}
+                  {t('ble_status_label')}: {bleState === State.PoweredOn ? t('ble_status_on') : t('ble_status_off')}
                 </Text>
               </View>
               {isScanning && (
@@ -323,7 +322,7 @@ const BleConnectionDrawer: React.FC<BleConnectionDrawerProps> = ({
                     size="small"
                     color={theme.colors.primary}
                   />
-                  <Text style={styles.scanningText}>扫描中...</Text>
+                  <Text style={styles.scanningText}>{t('ble_scanning')}</Text>
                 </View>
               )}
             </View>
@@ -344,10 +343,10 @@ const BleConnectionDrawer: React.FC<BleConnectionDrawerProps> = ({
                 color={theme.colors.surface}
               />
               <Text style={styles.scanButtonText}>
-                {isScanning ? '停止扫描' : '开始扫描'}
+                {isScanning ? t('ble_stop_scan') : t('ble_start_scan')}
               </Text>
             </TouchableOpacity>
-            <Text style={styles.deviceCount}>发现设备: {devices.length}</Text>
+            <Text style={styles.deviceCount}>{t('ble_devices_found')}: {devices.length}</Text>
           </View>
 
           {/* Device List */}
@@ -365,7 +364,7 @@ const BleConnectionDrawer: React.FC<BleConnectionDrawerProps> = ({
                   color={theme.colors.textLight}
                 />
                 <Text style={styles.emptyText}>
-                  {isScanning ? '正在搜索设备...' : '点击开始扫描按钮'}
+                  {isScanning ? t('ble_searching') : t('ble_tap_to_scan')}
                 </Text>
               </View>
             }
@@ -379,7 +378,7 @@ const BleConnectionDrawer: React.FC<BleConnectionDrawerProps> = ({
               color={theme.colors.info}
             />
             <Text style={styles.tipsText}>
-              确保蓝牙和位置服务已开启，设备在附近且未连接其他设备
+              {t('ble_tips')}
             </Text>
           </View>
         </View>

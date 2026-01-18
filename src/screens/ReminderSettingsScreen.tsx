@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { theme } from '../styles/theme';
+import { useLanguage } from '../i18n/LanguageContext';
 
 type ReminderType = 'timepoint' | 'timerange' | 'allday';
 
@@ -28,8 +29,9 @@ interface ReminderSettings {
 }
 
 const ReminderSettingsScreen = ({ navigation, route }: any) => {
+  const { t } = useLanguage();
   const { todoId, todoText } = route.params || {};
-  
+
   const [reminderSettings, setReminderSettings] = useState<ReminderSettings>({
     type: 'timepoint',
     repeatType: 'none',
@@ -46,31 +48,31 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
   const [calendarMonth, setCalendarMonth] = useState(new Date());
 
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('zh-CN', { 
-      hour: '2-digit', 
+    return date.toLocaleTimeString('zh-CN', {
+      hour: '2-digit',
       minute: '2-digit',
-      hour12: false 
+      hour12: false
     });
   };
 
   const generateEbbinghausReminders = (startDate: Date) => {
     const reminders = [];
     const intervals = [1, 2, 4, 7, 15]; // 前15天的间隔
-    
+
     // 前15天的提醒
     intervals.forEach(days => {
       const reminderDate = new Date(startDate);
       reminderDate.setDate(startDate.getDate() + days);
       reminders.push(reminderDate.toLocaleDateString());
     });
-    
+
     // 15天后每隔15天的提醒
     for (let i = 1; i <= 12; i++) { // 生成一年的提醒
       const reminderDate = new Date(startDate);
       reminderDate.setDate(startDate.getDate() + 15 + (i * 15));
       reminders.push(reminderDate.toLocaleDateString());
     }
-    
+
     return reminders;
   };
 
@@ -83,13 +85,13 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
   const onDateChange = (dateString: string) => {
     console.log('Date selected:', dateString, 'for type:', currentDateType);
     if (currentDateType === 'start') {
-      setReminderSettings({...reminderSettings, startDate: dateString});
+      setReminderSettings({ ...reminderSettings, startDate: dateString });
     } else if (currentDateType === 'end') {
-      setReminderSettings({...reminderSettings, endDate: dateString});
+      setReminderSettings({ ...reminderSettings, endDate: dateString });
     } else if (currentDateType === 'single') {
-      setReminderSettings({...reminderSettings, startDate: dateString});
+      setReminderSettings({ ...reminderSettings, startDate: dateString });
     }
-    
+
     setShowCalendar(false);
   };
 
@@ -97,7 +99,7 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
     console.log('Opening time picker for type:', type);
     setCurrentTimeType(type);
     setDatePickerMode('time');
-    
+
     // 设置当前时间作为初始值
     const currentTime = new Date();
     if (type === 'single' && reminderSettings.timepoint) {
@@ -110,7 +112,7 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
       const [hours, minutes] = reminderSettings.endTime.split(':');
       currentTime.setHours(parseInt(hours, 10), parseInt(minutes, 10));
     }
-    
+
     setPickerDate(currentTime);
     setShowDatePicker(true);
   };
@@ -118,8 +120,8 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
   const saveReminder = () => {
     // 这里可以添加保存提醒的逻辑
     console.log('保存提醒设置:', { todoId, settings: reminderSettings });
-    Alert.alert('提醒设置', '提醒设置已保存成功！', [
-      { text: '确定', onPress: () => navigation.goBack() }
+    Alert.alert(t('rem_set_success'), t('rem_set_saved'), [
+      { text: t('action_confirm'), onPress: () => navigation.goBack() }
     ]);
   };
 
@@ -135,7 +137,7 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
     const getCalendarData = () => {
       const year = calendarMonth.getFullYear();
       const month = calendarMonth.getMonth();
-      
+
       // 当月第一天和最后一天
       const firstDay = new Date(year, month, 1);
       const lastDay = new Date(year, month + 1, 0);
@@ -163,16 +165,16 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
       // 添加当月的日期
       const today = new Date();
       for (let date = 1; date <= daysInMonth; date++) {
-        const isToday = 
+        const isToday =
           today.getDate() === date &&
           today.getMonth() === month &&
           today.getFullYear() === year;
-        
-        const isSelected = 
+
+        const isSelected =
           selectedCalendarDate.getDate() === date &&
           selectedCalendarDate.getMonth() === month &&
           selectedCalendarDate.getFullYear() === year;
-        
+
         calendarDays.push({
           date,
           month,
@@ -217,10 +219,10 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
 
     const handleDayPress = (day: any) => {
       if (!day.isCurrentMonth) return;
-      
+
       const newDate = new Date(day.year, day.month, day.date);
       setSelectedCalendarDate(newDate);
-      
+
       const dateString = `${day.year}-${(day.month + 1).toString().padStart(2, '0')}-${day.date.toString().padStart(2, '0')}`;
       onDateChange(dateString);
     };
@@ -234,11 +236,11 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
           <TouchableOpacity onPress={() => navigateMonth('prev')} style={styles.calendarNavButton}>
             <Icon name="chevron-back" size={20} color={theme.colors.primary} />
           </TouchableOpacity>
-          
+
           <Text style={styles.calendarMonthText}>
             {calendarMonth.getFullYear()}年{months[calendarMonth.getMonth()]}
           </Text>
-          
+
           <TouchableOpacity onPress={() => navigateMonth('next')} style={styles.calendarNavButton}>
             <Icon name="chevron-forward" size={20} color={theme.colors.primary} />
           </TouchableOpacity>
@@ -293,9 +295,9 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
         >
           <Icon name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>设置提醒</Text>
+        <Text style={styles.headerTitle}>{t('rem_set_title')}</Text>
         <TouchableOpacity onPress={saveReminder}>
-          <Text style={styles.saveButton}>保存</Text>
+          <Text style={styles.saveButton}>{t('rem_set_save')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -303,32 +305,32 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
         {/* Todo 信息 */}
         {todoText && (
           <View style={styles.todoInfo}>
-            <Text style={styles.todoInfoTitle}>待办事项</Text>
+            <Text style={styles.todoInfoTitle}>{t('rem_todo_title')}</Text>
             <Text style={styles.todoInfoText}>{todoText}</Text>
           </View>
         )}
 
         {/* 提醒类型选择 */}
         <View style={styles.reminderSection}>
-          <Text style={styles.reminderSectionTitle}>提醒类型</Text>
+          <Text style={styles.reminderSectionTitle}>{t('rem_type_title')}</Text>
           <View style={styles.reminderTypeContainer}>
             <TouchableOpacity
               style={[styles.reminderTypeButton, reminderSettings.type === 'timepoint' && styles.reminderTypeButtonActive]}
-              onPress={() => setReminderSettings({...reminderSettings, type: 'timepoint'})}
+              onPress={() => setReminderSettings({ ...reminderSettings, type: 'timepoint' })}
             >
-              <Text style={[styles.reminderTypeText, reminderSettings.type === 'timepoint' && styles.reminderTypeTextActive]}>时间点</Text>
+              <Text style={[styles.reminderTypeText, reminderSettings.type === 'timepoint' && styles.reminderTypeTextActive]}>{t('rem_type_point')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.reminderTypeButton, reminderSettings.type === 'timerange' && styles.reminderTypeButtonActive]}
-              onPress={() => setReminderSettings({...reminderSettings, type: 'timerange'})}
+              onPress={() => setReminderSettings({ ...reminderSettings, type: 'timerange' })}
             >
-              <Text style={[styles.reminderTypeText, reminderSettings.type === 'timerange' && styles.reminderTypeTextActive]}>时间段</Text>
+              <Text style={[styles.reminderTypeText, reminderSettings.type === 'timerange' && styles.reminderTypeTextActive]}>{t('rem_type_range')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.reminderTypeButton, reminderSettings.type === 'allday' && styles.reminderTypeButtonActive]}
-              onPress={() => setReminderSettings({...reminderSettings, type: 'allday'})}
+              onPress={() => setReminderSettings({ ...reminderSettings, type: 'allday' })}
             >
-              <Text style={[styles.reminderTypeText, reminderSettings.type === 'allday' && styles.reminderTypeTextActive]}>全天</Text>
+              <Text style={[styles.reminderTypeText, reminderSettings.type === 'allday' && styles.reminderTypeTextActive]}>{t('rem_type_allday')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -336,8 +338,8 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
         {/* 时间设置 */}
         {reminderSettings.type === 'timepoint' && (
           <View style={styles.reminderSection}>
-            <Text style={styles.reminderSectionTitle}>选择时间</Text>
-            <TouchableOpacity 
+            <Text style={styles.reminderSectionTitle}>{t('rem_time_select')}</Text>
+            <TouchableOpacity
               style={styles.timePickerButton}
               onPress={() => openTimePicker('single')}
             >
@@ -349,9 +351,9 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
 
         {reminderSettings.type === 'timerange' && (
           <View style={styles.reminderSection}>
-            <Text style={styles.reminderSectionTitle}>选择时间段</Text>
+            <Text style={styles.reminderSectionTitle}>{t('rem_time_range_select')}</Text>
             <View style={styles.timeRangeContainer}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.timePickerButton, styles.flexOne]}
                 onPress={() => openTimePicker('start')}
               >
@@ -359,7 +361,7 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
                 <Icon name="time-outline" size={20} color={theme.colors.primary} />
               </TouchableOpacity>
               <Text style={styles.timeRangeSeparator}>-</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.timePickerButton, styles.flexOne]}
                 onPress={() => openTimePicker('end')}
               >
@@ -372,44 +374,44 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
 
         {reminderSettings.type === 'allday' && (
           <View style={styles.reminderSection}>
-            <Text style={styles.reminderSectionTitle}>全天事件</Text>
-            <Text style={styles.allDayText}>此事件不需要具体时间</Text>
+            <Text style={styles.reminderSectionTitle}>{t('rem_allday_title')}</Text>
+            <Text style={styles.allDayText}>{t('rem_allday_desc')}</Text>
           </View>
         )}
 
         {/* 重复设置 */}
         <View style={styles.reminderSection}>
-          <Text style={styles.reminderSectionTitle}>重复设置</Text>
+          <Text style={styles.reminderSectionTitle}>{t('rem_repeat_title')}</Text>
           <View style={styles.repeatContainer}>
             <TouchableOpacity
               style={[styles.repeatButton, reminderSettings.repeatType === 'none' && styles.repeatButtonActive]}
-              onPress={() => setReminderSettings({...reminderSettings, repeatType: 'none'})}
+              onPress={() => setReminderSettings({ ...reminderSettings, repeatType: 'none' })}
             >
-              <Text style={[styles.repeatText, reminderSettings.repeatType === 'none' && styles.repeatTextActive]}>不重复</Text>
+              <Text style={[styles.repeatText, reminderSettings.repeatType === 'none' && styles.repeatTextActive]}>{t('rem_repeat_none')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.repeatButton, reminderSettings.repeatType === 'daily' && styles.repeatButtonActive]}
-              onPress={() => setReminderSettings({...reminderSettings, repeatType: 'daily'})}
+              onPress={() => setReminderSettings({ ...reminderSettings, repeatType: 'daily' })}
             >
-              <Text style={[styles.repeatText, reminderSettings.repeatType === 'daily' && styles.repeatTextActive]}>每天</Text>
+              <Text style={[styles.repeatText, reminderSettings.repeatType === 'daily' && styles.repeatTextActive]}>{t('rem_repeat_daily')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.repeatButton, reminderSettings.repeatType === 'weekly' && styles.repeatButtonActive]}
-              onPress={() => setReminderSettings({...reminderSettings, repeatType: 'weekly'})}
+              onPress={() => setReminderSettings({ ...reminderSettings, repeatType: 'weekly' })}
             >
-              <Text style={[styles.repeatText, reminderSettings.repeatType === 'weekly' && styles.repeatTextActive]}>每周</Text>
+              <Text style={[styles.repeatText, reminderSettings.repeatType === 'weekly' && styles.repeatTextActive]}>{t('rem_repeat_weekly')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.repeatButton, reminderSettings.repeatType === 'custom' && styles.repeatButtonActive]}
-              onPress={() => setReminderSettings({...reminderSettings, repeatType: 'custom'})}
+              onPress={() => setReminderSettings({ ...reminderSettings, repeatType: 'custom' })}
             >
-              <Text style={[styles.repeatText, reminderSettings.repeatType === 'custom' && styles.repeatTextActive]}>自定义</Text>
+              <Text style={[styles.repeatText, reminderSettings.repeatType === 'custom' && styles.repeatTextActive]}>{t('rem_repeat_custom')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.repeatButton, reminderSettings.repeatType === 'ebbinghaus' && styles.repeatButtonActive]}
-              onPress={() => setReminderSettings({...reminderSettings, repeatType: 'ebbinghaus'})}
+              onPress={() => setReminderSettings({ ...reminderSettings, repeatType: 'ebbinghaus' })}
             >
-              <Text style={[styles.repeatText, reminderSettings.repeatType === 'ebbinghaus' && styles.repeatTextActive]}>艾宾浩斯记忆法</Text>
+              <Text style={[styles.repeatText, reminderSettings.repeatType === 'ebbinghaus' && styles.repeatTextActive]}>{t('rem_repeat_ebbinghaus')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -417,37 +419,37 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
         {/* 自定义重复设置 */}
         {reminderSettings.repeatType === 'custom' && (
           <View style={styles.reminderSection}>
-            <Text style={styles.reminderSectionTitle}>自定义重复</Text>
+            <Text style={styles.reminderSectionTitle}>{t('rem_custom_title')}</Text>
             <View style={styles.customRepeatContainer}>
               <View style={styles.customRepeatRow}>
-                <Text style={styles.customRepeatLabel}>每</Text>
+                <Text style={styles.customRepeatLabel}>{t('rem_custom_every')}</Text>
                 <TextInput
                   style={styles.customRepeatInput}
                   value={reminderSettings.customDays?.toString() || ''}
-                  onChangeText={(text) => setReminderSettings({...reminderSettings, customDays: parseInt(text, 10) || 0})}
+                  onChangeText={(text) => setReminderSettings({ ...reminderSettings, customDays: parseInt(text, 10) || 0 })}
                   keyboardType="numeric"
                   placeholder="1"
                 />
-                <Text style={styles.customRepeatLabel}>天</Text>
+                <Text style={styles.customRepeatLabel}>{t('rem_custom_day')}</Text>
               </View>
               <View style={styles.customRepeatRow}>
-                <Text style={styles.customRepeatLabel}>每</Text>
+                <Text style={styles.customRepeatLabel}>{t('rem_custom_every')}</Text>
                 <TextInput
                   style={styles.customRepeatInput}
                   value={reminderSettings.customWeeks?.toString() || ''}
-                  onChangeText={(text) => setReminderSettings({...reminderSettings, customWeeks: parseInt(text, 10) || 0})}
+                  onChangeText={(text) => setReminderSettings({ ...reminderSettings, customWeeks: parseInt(text, 10) || 0 })}
                   keyboardType="numeric"
                   placeholder="1"
                 />
-                <Text style={styles.customRepeatLabel}>周</Text>
+                <Text style={styles.customRepeatLabel}>{t('rem_custom_week')}</Text>
               </View>
             </View>
-            
+
             {/* 日期范围设置 */}
             <View style={styles.dateRangeContainer}>
-              <Text style={styles.dateRangeTitle}>日期范围</Text>
+              <Text style={styles.dateRangeTitle}>{t('rem_date_range')}</Text>
               <View style={styles.dateRangeRow}>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={[styles.datePickerButton, styles.flexOne]}
                   onPress={() => openDatePicker('start')}
                 >
@@ -457,7 +459,7 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
                   <Icon name="calendar-outline" size={20} color={theme.colors.primary} />
                 </TouchableOpacity>
                 <Text style={styles.dateRangeSeparator}>至</Text>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={[styles.datePickerButton, styles.flexOne]}
                   onPress={() => openDatePicker('end')}
                 >
@@ -474,25 +476,25 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
         {/* 艾宾浩斯记忆法预览 */}
         {reminderSettings.repeatType === 'ebbinghaus' && (
           <View style={styles.reminderSection}>
-            <Text style={styles.reminderSectionTitle}>艾宾浩斯记忆法提醒</Text>
+            <Text style={styles.reminderSectionTitle}>{t('rem_ebbinghaus_title')}</Text>
             <Text style={styles.ebbinghausDescription}>
-              将根据遗忘曲线自动生成提醒日期：第1、2、4、7、15天，之后每隔15天重复
+              {t('rem_ebbinghaus_desc')}
             </Text>
-            
+
             {/* 开始日期选择 */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.datePickerButton}
               onPress={() => openDatePicker('single')}
             >
               <Text style={styles.datePickerText}>
-                {reminderSettings.startDate || '选择开始日期'}
+                {reminderSettings.startDate || t('rem_start_date')}
               </Text>
               <Icon name="calendar-outline" size={20} color={theme.colors.primary} />
             </TouchableOpacity>
-            
+
             {reminderSettings.startDate && (
               <View style={styles.ebbinghausPreview}>
-                <Text style={styles.ebbinghausPreviewTitle}>预计提醒日期：</Text>
+                <Text style={styles.ebbinghausPreviewTitle}>{t('rem_ebbinghaus_preview')}</Text>
                 {generateEbbinghausReminders(new Date(reminderSettings.startDate || new Date())).slice(0, 8).map((date, index) => (
                   <Text key={index} style={styles.ebbinghausDate}>{date}</Text>
                 ))}
@@ -504,7 +506,7 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
         {/* 内嵌日历展示 */}
         {showCalendar && (
           <View style={styles.calendarSection}>
-            <Text style={styles.reminderSectionTitle}>选择日期</Text>
+            <Text style={styles.reminderSectionTitle}>{t('rem_select_date')}</Text>
             <View style={styles.calendarContainer}>
               <DatePickerCalendarInline />
             </View>
@@ -524,8 +526,8 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
             <View style={styles.timePickerContainer}>
               <View style={styles.timePickerHeader}>
                 <Text style={styles.timePickerTitle}>
-                  {currentTimeType === 'start' ? '选择开始时间' : 
-                   currentTimeType === 'end' ? '选择结束时间' : '选择时间'}
+                  {currentTimeType === 'start' ? '选择开始时间' :
+                    currentTimeType === 'end' ? '选择结束时间' : '选择时间'}
                 </Text>
               </View>
               <View style={styles.timePickerContent}>
@@ -534,7 +536,7 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
                   <View style={styles.timeControl}>
                     <Text style={styles.timeControlLabel}>小时</Text>
                     <View style={styles.timeScrollContainer}>
-                      <ScrollView 
+                      <ScrollView
                         style={styles.timeScrollView}
                         showsVerticalScrollIndicator={false}
                         snapToInterval={40}
@@ -570,7 +572,7 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
                   <View style={styles.timeControl}>
                     <Text style={styles.timeControlLabel}>分钟</Text>
                     <View style={styles.timeScrollContainer}>
-                      <ScrollView 
+                      <ScrollView
                         style={styles.timeScrollView}
                         showsVerticalScrollIndicator={false}
                         snapToInterval={40}
@@ -605,22 +607,22 @@ const ReminderSettingsScreen = ({ navigation, route }: any) => {
                 </View>
               </View>
               <View style={styles.timePickerButtons}>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.timePickerCancel}
                   onPress={() => setShowDatePicker(false)}
                 >
                   <Text style={styles.timePickerCancelText}>取消</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.timePickerConfirm}
                   onPress={() => {
                     const timeString = formatTime(pickerDate);
                     if (currentTimeType === 'single') {
-                      setReminderSettings({...reminderSettings, timepoint: timeString});
+                      setReminderSettings({ ...reminderSettings, timepoint: timeString });
                     } else if (currentTimeType === 'start') {
-                      setReminderSettings({...reminderSettings, startTime: timeString});
+                      setReminderSettings({ ...reminderSettings, startTime: timeString });
                     } else if (currentTimeType === 'end') {
-                      setReminderSettings({...reminderSettings, endTime: timeString});
+                      setReminderSettings({ ...reminderSettings, endTime: timeString });
                     }
                     setShowDatePicker(false);
                   }}
@@ -651,7 +653,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
     elevation: 2,
-    shadowColor: theme.colors.shadow,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,

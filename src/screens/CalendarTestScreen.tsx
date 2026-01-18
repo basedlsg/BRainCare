@@ -11,24 +11,44 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { theme } from '../styles/theme';
 
+import { useLanguage } from '../i18n/LanguageContext';
+
 const CalendarTestScreen = ({ navigation }: any) => {
+  const { t, language } = useLanguage();
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [calendarMonth, setCalendarMonth] = useState(new Date());
 
+  // Get month names for current language
+  const getMonthNames = () => [
+    t('jan'), t('feb'), t('mar'), t('apr'), t('may'), t('jun'),
+    t('jul'), t('aug'), t('sep'), t('oct'), t('nov'), t('dec')
+  ];
+
+  // Format date based on language (shared helper)
+  const formatDisplayDate = (date: Date) => {
+    const months = getMonthNames();
+    if (language === 'zh') {
+      return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+    }
+    return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+  };
+
   // 日期选择器内联组件
   const DatePickerCalendarInline = () => {
-    const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+    const weekDays = [
+      t('sun'), t('mon'), t('tue'), t('wed'), t('thu'), t('fri'), t('sat')
+    ];
     const months = [
-      '一月', '二月', '三月', '四月', '五月', '六月',
-      '七月', '八月', '九月', '十月', '十一月', '十二月'
+      t('jan'), t('feb'), t('mar'), t('apr'), t('may'), t('jun'),
+      t('jul'), t('aug'), t('sep'), t('oct'), t('nov'), t('dec')
     ];
 
     // 获取日历数据
     const getCalendarData = () => {
       const year = calendarMonth.getFullYear();
       const month = calendarMonth.getMonth();
-      
+
       // 当月第一天和最后一天
       const firstDay = new Date(year, month, 1);
       const lastDay = new Date(year, month + 1, 0);
@@ -56,16 +76,16 @@ const CalendarTestScreen = ({ navigation }: any) => {
       // 添加当月的日期
       const today = new Date();
       for (let date = 1; date <= daysInMonth; date++) {
-        const isToday = 
+        const isToday =
           today.getDate() === date &&
           today.getMonth() === month &&
           today.getFullYear() === year;
-        
-        const isSelected = 
+
+        const isSelected =
           selectedDate.getDate() === date &&
           selectedDate.getMonth() === month &&
           selectedDate.getFullYear() === year;
-        
+
         calendarDays.push({
           date,
           month,
@@ -110,32 +130,48 @@ const CalendarTestScreen = ({ navigation }: any) => {
 
     const handleDayPress = (day: any) => {
       if (!day.isCurrentMonth) return;
-      
+
       const newDate = new Date(day.year, day.month, day.date);
       setSelectedDate(newDate);
-      
+
       const dateString = `${day.year}-${(day.month + 1).toString().padStart(2, '0')}-${day.date.toString().padStart(2, '0')}`;
-      Alert.alert('日期已选择', `您选择的日期是：${dateString}`);
+      Alert.alert(t('cal_test_alert_title'), `${t('cal_test_alert_msg')}${dateString}`);
     };
 
     const calendarData = getCalendarData();
 
+    // Format date based on language
+    const formatDate = (year: number, month: number, day: number) => {
+      if (language === 'zh') {
+        return `${year}年${month}月${day}日`;
+      }
+      return `${months[month - 1]} ${day}, ${year}`;
+    };
+
+    // Format header date (year + month only)
+    const formatHeaderDate = (year: number, monthIndex: number) => {
+      if (language === 'zh') {
+        return `${year}年${months[monthIndex]}`;
+      }
+      return `${months[monthIndex]} ${year}`;
+    };
+
     return (
       <View style={styles.inlineCalendar}>
         <Text style={styles.currentDateText}>
-          {selectedDate.getFullYear()}年{selectedDate.getMonth() + 1}月{selectedDate.getDate()}日
+          {formatDate(selectedDate.getFullYear(), selectedDate.getMonth() + 1, selectedDate.getDate())}
         </Text>
-        
+
         {/* 月份导航 */}
         <View style={styles.calendarHeader}>
           <TouchableOpacity onPress={() => navigateMonth('prev')} style={styles.calendarNavButton}>
             <Icon name="chevron-back" size={20} color={theme.colors.primary} />
           </TouchableOpacity>
-          
+
           <Text style={styles.calendarMonthText}>
-            {calendarMonth.getFullYear()}年{months[calendarMonth.getMonth()]}
+            {formatHeaderDate(calendarMonth.getFullYear(), calendarMonth.getMonth())}
           </Text>
-          
+
           <TouchableOpacity onPress={() => navigateMonth('next')} style={styles.calendarNavButton}>
             <Icon name="chevron-forward" size={20} color={theme.colors.primary} />
           </TouchableOpacity>
@@ -190,36 +226,36 @@ const CalendarTestScreen = ({ navigation }: any) => {
         >
           <Icon name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>日历测试</Text>
+        <Text style={styles.headerTitle}>{t('cal_test_header')}</Text>
         <View style={styles.headerSpacer} />
       </View>
 
       {/* Content */}
       <View style={styles.content}>
-        <Text style={styles.title}>日历选择器测试页面</Text>
-        <Text style={styles.subtitle}>点击下面的按钮来测试日历显示功能</Text>
-        
+        <Text style={styles.title}>{t('cal_test_title')}</Text>
+        <Text style={styles.subtitle}>{t('cal_test_subtitle')}</Text>
+
         <View style={styles.infoCard}>
-          <Text style={styles.infoTitle}>当前选择的日期：</Text>
+          <Text style={styles.infoTitle}>{t('cal_test_selected')}</Text>
           <Text style={styles.selectedDateText}>
-            {selectedDate.getFullYear()}年{selectedDate.getMonth() + 1}月{selectedDate.getDate()}日
+            {formatDisplayDate(selectedDate)}
           </Text>
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.openCalendarButton}
           onPress={() => setShowCalendar(true)}
         >
           <Icon name="calendar-outline" size={24} color={theme.colors.surface} />
-          <Text style={styles.openCalendarText}>打开日历选择器</Text>
+          <Text style={styles.openCalendarText}>{t('cal_test_open')}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.directCalendarButton}
           onPress={() => setShowCalendar(false)}
         >
           <Icon name="calendar" size={24} color={theme.colors.primary} />
-          <Text style={styles.directCalendarText}>显示内嵌日历</Text>
+          <Text style={styles.directCalendarText}>{t('cal_test_inline')}</Text>
         </TouchableOpacity>
 
         {/* 直接显示的日历 */}
@@ -240,23 +276,23 @@ const CalendarTestScreen = ({ navigation }: any) => {
         <View style={styles.datePickerModal}>
           <View style={styles.datePickerContainer}>
             <View style={styles.datePickerHeader}>
-              <Text style={styles.datePickerTitle}>选择日期</Text>
+              <Text style={styles.datePickerTitle}>{t('select_date')}</Text>
             </View>
             <View style={styles.datePickerContent}>
               <DatePickerCalendarInline />
             </View>
             <View style={styles.datePickerButtons}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.datePickerCancel}
                 onPress={() => setShowCalendar(false)}
               >
-                <Text style={styles.datePickerCancelText}>取消</Text>
+                <Text style={styles.datePickerCancelText}>{t('cancel')}</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.datePickerConfirm}
                 onPress={() => setShowCalendar(false)}
               >
-                <Text style={styles.datePickerConfirmText}>确定</Text>
+                <Text style={styles.datePickerConfirmText}>{t('confirm')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -279,11 +315,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
-    elevation: 2,
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    ...theme.shadows.xs,
   },
   backButton: {
     padding: theme.spacing.sm,

@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,9 +9,11 @@ import {
   Platform,
   PermissionsAndroid,
 } from 'react-native';
-import {BleManager, Device, State} from 'react-native-ble-plx';
+import { BleManager, Device, State } from 'react-native-ble-plx';
+import { useLanguage } from '../i18n/LanguageContext';
 
 const BleTestScreen = () => {
+  const { t } = useLanguage();
   const [bleManager] = useState(() => new BleManager());
   const [devices, setDevices] = useState<Device[]>([]);
   const [isScanning, setIsScanning] = useState(false);
@@ -103,7 +105,7 @@ const BleTestScreen = () => {
 
     bleManager.startDeviceScan(
       null, // 扫描所有设备，不过滤 UUID
-      {allowDuplicates: true}, // 允许重复发现设备以更新 RSSI
+      { allowDuplicates: true }, // 允许重复发现设备以更新 RSSI
       (error, device) => {
         if (error) {
           console.error('❌ Scan error:', error);
@@ -153,7 +155,7 @@ const BleTestScreen = () => {
   };
 
   // 渲染设备项
-  const renderDevice = ({item}: {item: Device}) => (
+  const renderDevice = ({ item }: { item: Device }) => (
     <View style={styles.deviceCard}>
       <Text style={styles.deviceName}>
         {item.name || item.localName || 'Unknown Device'}
@@ -166,9 +168,9 @@ const BleTestScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>BLE 扫描测试</Text>
+        <Text style={styles.title}>{t('debug_ble_title')}</Text>
         <Text style={styles.state}>
-          状态: {bleState} {bleState === State.PoweredOn ? '✅' : '❌'}
+          {t('debug_ble_status')}: {bleState} {bleState === State.PoweredOn ? '✅' : '❌'}
         </Text>
       </View>
 
@@ -178,19 +180,19 @@ const BleTestScreen = () => {
           onPress={startScan}
           disabled={isScanning}>
           <Text style={styles.buttonText}>
-            {isScanning ? '扫描中...' : '开始扫描'}
+            {isScanning ? t('debug_scan_scanning') : t('debug_scan_start')}
           </Text>
         </TouchableOpacity>
 
         {isScanning && (
           <TouchableOpacity style={styles.stopButton} onPress={stopScan}>
-            <Text style={styles.buttonText}>停止扫描</Text>
+            <Text style={styles.buttonText}>{t('debug_scan_stop')}</Text>
           </TouchableOpacity>
         )}
       </View>
 
       <View style={styles.info}>
-        <Text style={styles.infoText}>发现设备: {devices.length}</Text>
+        <Text style={styles.infoText}>{t('debug_devices_found')}: {devices.length}</Text>
         {isScanning && <Text style={styles.scanning}>🔍 扫描中...</Text>}
       </View>
 
@@ -207,12 +209,12 @@ const BleTestScreen = () => {
       />
 
       <View style={styles.tips}>
-        <Text style={styles.tipsTitle}>💡 提示:</Text>
-        <Text style={styles.tipsText}>• 确保蓝牙已开启</Text>
-        <Text style={styles.tipsText}>• 确保位置服务（GPS）已开启</Text>
-        <Text style={styles.tipsText}>• 扫描会持续10秒后自动停止</Text>
+        <Text style={styles.tipsTitle}>💡 {t('debug_tips_title')}:</Text>
+        <Text style={styles.tipsText}>• {t('debug_tips_ble')}</Text>
+        <Text style={styles.tipsText}>• {t('debug_tips_gps')}</Text>
+        <Text style={styles.tipsText}>• Scan stops automatically after 10s</Text>
         <Text style={styles.tipsText}>
-          • 查看 Metro bundler 控制台的详细日志
+          • Check Metro console for logs
         </Text>
       </View>
     </View>

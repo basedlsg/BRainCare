@@ -9,6 +9,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { theme } from '../styles/theme';
 import CustomerService from '../components/CustomerService';
+import { useLanguage } from '../i18n/LanguageContext';
 
 // const { width } = Dimensions.get('window');
 
@@ -31,13 +32,15 @@ interface SleepData {
 }
 
 const RecordsScreen = () => {
+  const { t } = useLanguage();
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>('week');
   const [currentWeek, setCurrentWeek] = useState(0);
   const [showCustomerService, setShowCustomerService] = useState(false);
+  const [showAllMetrics, setShowAllMetrics] = useState(false); // Progressive disclosure
 
   const periods = [
-    { key: 'week', title: '周' },
-    { key: 'month', title: '月' },
+    { key: 'week', title: t('period_week') },
+    { key: 'month', title: t('period_month') },
   ];
 
   const getCurrentPeriodText = () => {
@@ -48,10 +51,11 @@ const RecordsScreen = () => {
         startOfWeek.setDate(now.getDate() - now.getDay() + 1 + currentWeek * 7); // 周一开始
         const endOfWeek = new Date(startOfWeek);
         endOfWeek.setDate(startOfWeek.getDate() + 6); // 到周日
-        return `${startOfWeek.getFullYear()}年${(startOfWeek.getMonth() + 1)}月${startOfWeek.getDate()}日 - ${endOfWeek.getMonth() + 1}月${endOfWeek.getDate()}日`;
+        // Simple localization for date range, or keep as YYYY/M/D format which is universal enough
+        return `${startOfWeek.getFullYear()}${t('year')}${(startOfWeek.getMonth() + 1)}${t('month')}${startOfWeek.getDate()}${t('day')} - ${endOfWeek.getMonth() + 1}${t('month')}${endOfWeek.getDate()}${t('day')}`;
       case 'month':
         const month = new Date(now.getFullYear(), now.getMonth() + currentWeek, 1);
-        return `${month.getFullYear()}年${month.getMonth() + 1}月`;
+        return `${month.getFullYear()}${t('year')}${month.getMonth() + 1}${t('month')}`;
       default:
         return '';
     }
@@ -72,47 +76,47 @@ const RecordsScreen = () => {
 
   const statData: StatItem[] = [
     {
-      name: '焦虑指数',
+      name: t('stat_anxiety'),
       value: 28,
       target: 30,
       trend: -12.5,
-      unit: '分',
+      unit: t('unit_points'),
       color: theme.colors.success,
     },
     {
-      name: '抑郁指数',
+      name: t('stat_depression'),
       value: 22,
       target: 25,
       trend: -8.3,
-      unit: '分',
+      unit: t('unit_points'),
       color: theme.colors.success,
     },
     {
-      name: '喝水量',
+      name: t('stat_water'),
       value: 1850,
       target: 2000,
       trend: 15.2,
-      unit: 'ml',
+      unit: t('unit_ml'),
       color: theme.colors.warning,
     },
     {
-      name: '专注时长',
+      name: t('stat_focus'),
       value: 45,
       target: 60,
       trend: 22.7,
-      unit: '分钟',
+      unit: t('unit_mins'),
       color: theme.colors.warning,
     },
   ];
 
   const sleepData: SleepData[] = [
-    { date: '周一', bedTime: '23:30', wakeTime: '07:00', duration: 7.5 },
-    { date: '周二', bedTime: '23:15', wakeTime: '06:45', duration: 7.5 },
-    { date: '周三', bedTime: '00:15', wakeTime: '07:30', duration: 7.25 },
-    { date: '周四', bedTime: '23:00', wakeTime: '06:30', duration: 7.5 },
-    { date: '周五', bedTime: '23:45', wakeTime: '07:15', duration: 7.5 },
-    { date: '周六', bedTime: '00:30', wakeTime: '08:00', duration: 7.5 },
-    { date: '周日', bedTime: '23:20', wakeTime: '07:10', duration: 7.83 },
+    { date: t('mon'), bedTime: '23:30', wakeTime: '07:00', duration: 7.5 },
+    { date: t('tue'), bedTime: '23:15', wakeTime: '06:45', duration: 7.5 },
+    { date: t('wed'), bedTime: '00:15', wakeTime: '07:30', duration: 7.25 },
+    { date: t('thu'), bedTime: '23:00', wakeTime: '06:30', duration: 7.5 },
+    { date: t('fri'), bedTime: '23:45', wakeTime: '07:15', duration: 7.5 },
+    { date: t('sat'), bedTime: '00:30', wakeTime: '08:00', duration: 7.5 },
+    { date: t('sun'), bedTime: '23:20', wakeTime: '07:10', duration: 7.83 },
   ];
 
   const timeToMinutes = (time: string) => {
@@ -124,15 +128,15 @@ const RecordsScreen = () => {
   const getDisplayDateIndices = (daysInMonth: number) => {
     // 使用固定的关键日期显示，不管多少天都保持一致
     const baseKeyDates = [1, 5, 10, 15, 20, 25];
-    
+
     // 过滤出在当月范围内的日期
     const keyDates = baseKeyDates.filter(day => day <= daysInMonth);
-    
+
     // 总是添加最后一天（除非已经在列表中）
     if (!keyDates.includes(daysInMonth) && daysInMonth > 1) {
       keyDates.push(daysInMonth);
     }
-    
+
     return keyDates.sort((a, b) => a - b);
   };
 
@@ -143,7 +147,7 @@ const RecordsScreen = () => {
     if (selectedPeriod === 'week') {
       achievedDays = Math.floor(Math.random() * 7) + 1;
       dailyValues = Array.from({ length: 7 }, (_, i) => ({
-        day: ['一', '二', '三', '四', '五', '六', '日'][i],
+        day: [t('mon'), t('tue'), t('wed'), t('thu'), t('fri'), t('sat'), t('sun')][i],
         dayNumber: i + 1,
         value: Math.random() * item.target * 1.5,
         isAchieved: Math.random() > 0.3,
@@ -154,7 +158,7 @@ const RecordsScreen = () => {
       const now = new Date();
       const daysInMonth = new Date(now.getFullYear(), now.getMonth() + currentWeek + 1, 0).getDate();
       const displayIndices = getDisplayDateIndices(daysInMonth);
-      
+
       achievedDays = Math.floor(Math.random() * daysInMonth) + Math.floor(daysInMonth * 0.6);
       dailyValues = Array.from({ length: daysInMonth }, (_, i) => {
         const dayNumber = i + 1;
@@ -173,58 +177,58 @@ const RecordsScreen = () => {
         <View style={styles.chartHeader}>
           <Text style={styles.chartTitle}>{item.name}</Text>
           <View style={styles.achievementBadge}>
-            <Text style={styles.achievementText}>达标 {achievedDays} 天</Text>
+            <Text style={styles.achievementText}>{t('label_achieved_days').replace('天', '')} {achievedDays} {t('summary_days')}</Text>
           </View>
         </View>
-        
+
         <View style={styles.chartContainer}>
           <View style={selectedPeriod === 'week' ? styles.chartContentWeek : styles.chartContentMonth}>
-          {dailyValues.map((day, index) => (
-            <TouchableOpacity key={index} style={styles.barContainer} activeOpacity={0.7}>
-              <View style={styles.barWrapper}>
-                <View
-                  style={[
-                    styles.bar,
-                    {
-                      height: Math.max((day.value / (item.target * 1.5)) * 100, 8),
-                      width: selectedPeriod === 'week' ? 20 : 8,
-                      backgroundColor: day.isAchieved ? theme.colors.primary : theme.colors.secondary,
-                    }
-                  ]}
-                />
-              </View>
-              {day.showLabel ? (
-                <Text 
-                  style={[
-                    styles.barLabel,
-                    selectedPeriod === 'month' && styles.barLabelMonth
-                  ]} 
-                  numberOfLines={1}
-                  allowFontScaling={false}
-                >
-                  {day.dayNumber}
-                </Text>
-              ) : (
-                <View style={styles.barLabelEmpty} />
-              )}
-            </TouchableOpacity>
-          ))}
+            {dailyValues.map((day, index) => (
+              <TouchableOpacity key={index} style={styles.barContainer} activeOpacity={0.7}>
+                <View style={styles.barWrapper}>
+                  <View
+                    style={[
+                      styles.bar,
+                      {
+                        height: Math.max((day.value / (item.target * 1.5)) * 100, 8),
+                        width: selectedPeriod === 'week' ? 20 : 8,
+                        backgroundColor: day.isAchieved ? theme.colors.primary : theme.colors.secondary,
+                      }
+                    ]}
+                  />
+                </View>
+                {day.showLabel ? (
+                  <Text
+                    style={[
+                      styles.barLabel,
+                      selectedPeriod === 'month' && styles.barLabelMonth
+                    ]}
+                    numberOfLines={1}
+                    allowFontScaling={false}
+                  >
+                    {day.dayNumber}
+                  </Text>
+                ) : (
+                  <View style={styles.barLabelEmpty} />
+                )}
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
         <View style={styles.chartStats}>
           <View style={styles.statItem}>
-            <Text style={styles.statLabel}>达标天数</Text>
-            <Text style={styles.statValue}>{achievedDays} 天</Text>
+            <Text style={styles.statLabel}>{t('label_achieved_days')}</Text>
+            <Text style={styles.statValue}>{achievedDays} {t('summary_days')}</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statLabel}>日均{item.name}</Text>
+            <Text style={styles.statLabel}>{t('label_daily_avg').replace('日均', '')}{item.name}</Text>
             <Text style={styles.statValue}>{item.value} {item.unit}</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statLabel}>趋势对比</Text>
+            <Text style={styles.statLabel}>{t('label_trend')}</Text>
             <View style={[
-              styles.trendBadge, 
+              styles.trendBadge,
               { backgroundColor: item.trend > 0 ? theme.colors.success + '20' : theme.colors.warning + '20' }
             ]}>
               <Icon
@@ -246,8 +250,8 @@ const RecordsScreen = () => {
   };
 
   const renderSleepChart = () => {
-    const achievedDays = sleepData.filter(day => 
-      timeToMinutes(day.bedTime) <= timeToMinutes('23:30') && 
+    const achievedDays = sleepData.filter(day =>
+      timeToMinutes(day.bedTime) <= timeToMinutes('23:30') &&
       timeToMinutes(day.wakeTime) >= timeToMinutes('06:30')
     ).length;
 
@@ -263,9 +267,9 @@ const RecordsScreen = () => {
     return (
       <View style={styles.chartCard}>
         <View style={styles.chartHeader}>
-          <Text style={styles.chartTitle}>睡眠统计</Text>
+          <Text style={styles.chartTitle}>{t('stat_sleep')}</Text>
           <View style={styles.achievementBadge}>
-            <Text style={styles.achievementText}>达标 {achievedDays} 天</Text>
+            <Text style={styles.achievementText}>{t('label_achieved_days').replace('天', '')} {achievedDays} {t('summary_days')}</Text>
           </View>
         </View>
 
@@ -276,7 +280,7 @@ const RecordsScreen = () => {
             <Text style={styles.timeLabel}>04:00</Text>
             <Text style={styles.timeLabel}>08:00</Text>
           </View>
-          
+
           {sleepData.map((day, index) => (
             <View key={index} style={styles.sleepBarContainer}>
               <Text style={styles.sleepDayLabel}>{day.date}</Text>
@@ -298,15 +302,15 @@ const RecordsScreen = () => {
 
         <View style={styles.chartStats}>
           <View style={styles.statItem}>
-            <Text style={styles.statLabel}>达标天数</Text>
-            <Text style={styles.statValue}>{achievedDays} 天</Text>
+            <Text style={styles.statLabel}>{t('label_achieved_days')}</Text>
+            <Text style={styles.statValue}>{achievedDays} {t('summary_days')}</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statLabel}>平均就寝</Text>
+            <Text style={styles.statLabel}>{t('label_avg_bed')}</Text>
             <Text style={styles.statValue}>{formatMinutesToTime(avgBedTime)}</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statLabel}>平均起床</Text>
+            <Text style={styles.statLabel}>{t('label_avg_wake')}</Text>
             <Text style={styles.statValue}>{formatMinutesToTime(avgWakeTime)}</Text>
           </View>
         </View>
@@ -318,8 +322,8 @@ const RecordsScreen = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>记录</Text>
-        <TouchableOpacity 
+        <Text style={styles.headerTitle}>{t('records_title')}</Text>
+        <TouchableOpacity
           style={styles.customerServiceBtn}
           onPress={() => setShowCustomerService(true)}
         >
@@ -356,9 +360,9 @@ const RecordsScreen = () => {
           >
             <Icon name="chevron-back" size={20} color={theme.colors.textSecondary} />
           </TouchableOpacity>
-          
+
           <Text style={styles.periodText}>{getCurrentPeriodText()}</Text>
-          
+
           <TouchableOpacity
             style={styles.navButton}
             onPress={() => setCurrentWeek(currentWeek + 1)}
@@ -374,25 +378,56 @@ const RecordsScreen = () => {
           <View style={styles.summaryBadge}>
             <Icon name="calendar" size={20} color={theme.colors.primary} />
             <Text style={styles.summaryBadgeText}>
-              本{selectedPeriod === 'week' ? '周' : '月'}累计记录
+              {t('summary_msg').replace('%PERIOD%', selectedPeriod === 'week' ? t('period_week') : t('period_month'))}
             </Text>
             <Text style={styles.summaryBadgeNumber}>{getTotalRecordDays()}</Text>
-            <Text style={styles.summaryBadgeUnit}>天</Text>
+            <Text style={styles.summaryBadgeUnit}>{t('summary_days')}</Text>
           </View>
         </View>
 
-        {/* Stats Charts */}
-        {statData.map((item, index) => (
+        {/* Sleep Chart - Always first per design spec */}
+        {renderSleepChart()}
+
+        {/* Top Metrics (show first 2 by default) */}
+        {statData.slice(0, showAllMetrics ? statData.length : 2).map((item, index) => (
           <View key={index}>
             {renderBarChart(item)}
           </View>
         ))}
 
-        {/* Sleep Chart */}
-        {renderSleepChart()}
+        {/* See More / Customize Buttons */}
+        {!showAllMetrics && statData.length > 2 && (
+          <View style={styles.metricsActions}>
+            <TouchableOpacity
+              style={styles.seeMoreButton}
+              onPress={() => setShowAllMetrics(true)}
+            >
+              <Icon name="add-circle-outline" size={18} color={theme.colors.primary} />
+              <Text style={styles.seeMoreText}>{t('see_more_metrics')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.customizeButton}>
+              <Icon name="settings-outline" size={18} color={theme.colors.textSecondary} />
+              <Text style={styles.customizeText}>{t('customize_metrics')}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Collapse button when expanded */}
+        {showAllMetrics && (
+          <TouchableOpacity
+            style={styles.collapseButton}
+            onPress={() => setShowAllMetrics(false)}
+          >
+            <Icon name="chevron-up" size={18} color={theme.colors.primary} />
+            <Text style={styles.collapseText}>{t('weekly')}</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Bottom spacing */}
+        <View style={styles.bottomSpacing} />
       </ScrollView>
 
-      <CustomerService 
+      <CustomerService
         visible={showCustomerService}
         onClose={() => setShowCustomerService(false)}
       />
@@ -663,6 +698,60 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: theme.borderRadius.sm,
     top: 0,
+  },
+
+  // === NEW PROGRESSIVE DISCLOSURE STYLES ===
+  metricsActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: theme.spacing.lg,
+    gap: theme.spacing.md,
+  },
+  seeMoreButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.primary + '15',
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: theme.borderRadius.pill,
+    gap: theme.spacing.xs,
+  },
+  seeMoreText: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.medium,
+    color: theme.colors.primary,
+  },
+  customizeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: theme.borderRadius.pill,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    gap: theme.spacing.xs,
+  },
+  customizeText: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.medium,
+    color: theme.colors.textSecondary,
+  },
+  collapseButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: theme.spacing.md,
+    gap: theme.spacing.xs,
+  },
+  collapseText: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.medium,
+    color: theme.colors.primary,
+  },
+  bottomSpacing: {
+    height: theme.spacing.xxxl,
   },
 });
 

@@ -1,12 +1,71 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# BrainCare
 
-# Getting Started
+## 1. Project Overview
+BrainCare is a comprehensive brain health monitoring and wellness application built with React Native. It integrates real-time EEG data visualization via Bluetooth Low Energy (BLE), personalized wellness plans, and comprehensive health record tracking. The app is designed for both English and Chinese speaking users, featuring a seamless global localization system that permeates every screen and component.
+
+## 2. Technical Architecture
+
+### Frameworks & Libraries
+- **Core**: React Native (0.76.6), TypeScript.
+- **Navigation**: React Navigation 6 (Stack & Bottom Tabs) for fluid screen management.
+- **BLE Integration**: `react-native-ble-plx` for robust Bluetooth device connections, scanning, and data streaming.
+- **UI Components**: A custom-built component system, supplemented by `react-native-vector-icons` and `react-native-community/datetimepicker`.
+- **Environment**: Configured for iOS (CocoaPods) and Android (Gradle) native builds.
+
+### Application Flow
+1.  **Entry Point**: `App.tsx` serves as the root, wrapping the application in the `LanguageProvider` to ensure translation availability appropriately before the `NavigationContainer` initializes.
+2.  **Navigation Layer**: 
+    - `AppNavigator`: Manages the application stack, including full-screen modals like `NotificationSettings` and debug tools.
+    - `TabNavigator`: Controls the primary main interface (Home, Assessment, Wellness, Records, Profile).
+3.  **State Management**: 
+    - **Local**: React hooks (`useState`, `useEffect`) manage transient screen state.
+    - **Global**: Context API (`LanguageContext`) manages app-wide preferences like the active locale.
+
+## 3. Intricacies & Key Features
+
+### Global Localization (i18n)
+The application eschews heavy external i18n libraries in favor of a lightweight, type-safe manual implementation:
+- **Architecture**: A `LanguageContext` wraps the app, providing a `useLanguage` hook.
+- **Usage**: Components consume `const { t, language } = useLanguage();`.
+- **Dictionary**: `src/i18n/translations.ts` acts as the single source of truth, enforcing type consistency between English (`en`) and Chinese (`zh`) keys.
+- **Scope**: Covers everything from static labels to dynamic content in complex settings screens.
+
+### Bluetooth Low Energy (BLE) Pipeline
+BrainCare features a sophisticated BLE implementation designed for medical-grade data handling:
+- **Singleton Management**: `BleManager` is instantiated efficiently to handle lifecycle events.
+- **Dedicated Debugging**: 
+    - `BluetoothDebugScreen`: A developer-centric tool allowing raw RSSI monitoring, service discovery, and UUID inspection. It supports manual subscription to Nordic UART Service (NUS) characteristics for raw data stream debugging.
+    - `BleTestScreen`: A simplified scanner to verify hardware availability and permission states (Android 12+ permissions handled explicitly).
+- **Real-time Visualization**: The `AssessmentScreen` directly consumes high-frequency BLE packets to render smooth EEG waveforms alongside connection quality indicators.
+
+### Custom Design System
+The UI is built on a centralized theme engine (`src/styles/theme.ts`) that standardizes:
+- **Color Palette**: A modern, calming palette with primary Teals and warm Secondary accents.
+- **Typography & Spacing**: A consistent 8px-based grid system (`spacing.unit`) ensuring pixel-perfect alignment.
+- **Shadows & Elevation**: detailed shadow definitions for Android elevation and iOS layer shadows.
+
+### Advanced Business Logic
+- **Ebbinghaus Memory Algorithm**: The `ReminderSettingsScreen` implements the Ebbinghaus Forgetting Curve logic to automatically calculate optimal review intervals (1, 2, 4, 7, 15 days) for memory training tasks.
+- **Data Visualization**: `RecordsScreen` and `AssessmentScreen` feature custom-drawn charts to visualize anxiety levels, sleep patterns, and raw brainwave data.
+
+## 4. Project Structure
+```
+src/
+├── components/   # Reusable UI atoms (Cards, Charts, Buttons, Badges)
+├── hooks/        # Custom React hooks (useLanguage, specialized logic)
+├── i18n/         # Internationalization core (Context & Translations)
+├── navigation/   # Navigator definitions (Stack & Tab configurations)
+├── screens/      # Feature-specific screens (Assessment, Home, Debug tools)
+├── services/     # Business logic, API connectors, and BLE services
+├── styles/       # Centralized theme, colors, and global styles
+└── types/        # TypeScript interfaces and type definitions
+```
+
+## 5. Getting Started
 
 > **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
 
-## Step 1: Start Metro
-
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+### Step 1: Start Metro
 
 To start the Metro dev server, run the following command from the root of your React Native project:
 
@@ -18,7 +77,7 @@ npm start
 yarn start
 ```
 
-## Step 2: Build and run your app
+### Step 2: Build and run your app
 
 With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
 
@@ -36,19 +95,12 @@ yarn android
 
 For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
 ```sh
 bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
 bundle exec pod install
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+Then:
 
 ```sh
 # Using npm
@@ -57,41 +109,3 @@ npm run ios
 # OR using Yarn
 yarn ios
 ```
-
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
-
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.

@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { theme } from '../styles/theme';
+import { useLanguage } from '../i18n/LanguageContext';
+import { useSettings } from '../contexts/SettingsContext';
 
 interface ProfileItem {
   id: string;
@@ -24,210 +26,59 @@ interface ProfileItem {
 }
 
 const ProfileScreen = ({ navigation }: any) => {
+  const { t } = useLanguage();
+  const { showRawWaveforms, toggleRawWaveforms } = useSettings();
   const [userInfo, setUserInfo] = useState({
-    nickname: '用户昵称',
+    nickname: t('user_nickname'),
     avatar: null,
   });
 
-  const profileSections: { title: string; items: ProfileItem[] }[] = [
+  // Simplified Profile: Only 4 items (per design spec)
+  const profileItems = [
     {
-      title: '个人中心',
-      items: [
-        {
-          id: 'account',
-          title: '我的账号',
-          icon: 'person-outline',
-          hasArrow: true,
-          gradient: ['#34D399', '#6EE7B7'],
-          description: '个人信息管理',
-        },
-        {
-          id: 'membership',
-          title: '会员中心',
-          icon: 'diamond-outline',
-          hasArrow: true,
-          badge: 'VIP',
-          gradient: ['#F472B6', '#EC4899'],
-          description: '享受更多会员权益',
-        },
-      ]
+      id: 'account',
+      title: t('item_account'),
+      icon: 'person-outline',
+      color: theme.colors.success,
+      description: t('item_account_desc'),
     },
     {
-      title: '设置与偏好',
-      items: [
-        {
-          id: 'notifications',
-          title: '声音和通知',
-          icon: 'notifications-outline',
-          hasArrow: true,
-          gradient: ['#FDBA74', '#FCD34D'],
-          description: '通知提醒设置',
-        },
-        {
-          id: 'language',
-          title: '更改语言',
-          icon: 'globe-outline',
-          hasArrow: true,
-          subtitle: '简体中文',
-          gradient: ['#60A5FA', '#93C5FD'],
-          description: '选择您的语言',
-        },
-        {
-          id: 'bluetooth',
-          title: '蓝牙设备调试',
-          icon: 'bluetooth-outline',
-          hasArrow: true,
-          gradient: ['#60A5FA', '#93C5FD'],
-          description: '连接和调试EEG蓝牙设备',
-        },
-        {
-          id: 'bletest',
-          title: 'BLE 扫描测试',
-          icon: 'radio-outline',
-          hasArrow: true,
-          gradient: ['#10B981', '#34D399'],
-          description: '简化的BLE设备扫描测试工具',
-        },
-      ]
+      id: 'membership',
+      title: t('item_membership'),
+      icon: 'diamond-outline',
+      color: theme.colors.healthPurple,
+      description: t('item_membership_desc'),
+      badge: 'VIP',
     },
     {
-      title: '购买与服务',
-      items: [
-        {
-          id: 'orders',
-          title: '订单信息',
-          icon: 'receipt-outline',
-          hasArrow: true,
-          gradient: ['#BA68C8', '#CE93D8'],
-          description: '查看购买历史',
-        },
-        {
-          id: 'support',
-          title: '打赏应用',
-          icon: 'heart-outline',
-          hasArrow: true,
-          gradient: ['#F87171', '#FCA5A5'],
-          description: '支持应用发展',
-        },
-        {
-          id: 'invite',
-          title: '邀请好友',
-          icon: 'share-outline',
-          hasArrow: true,
-          subtitle: '已邀请 3 位好友',
-          gradient: ['#4ADE80', '#86EFAC'],
-          description: '分享获取奖励',
-        },
-      ]
+      id: 'settings',
+      title: t('settings'),
+      icon: 'settings-outline',
+      color: theme.colors.primary,
+      description: t('settings_desc'),
     },
     {
-      title: '帮助与反馈',
-      items: [
-        {
-          id: 'guide',
-          title: '操作指南',
-          icon: 'help-circle-outline',
-          hasArrow: true,
-          gradient: ['#A78BFA', '#C4B5FD'],
-          description: '应用使用教程',
-        },
-        {
-          id: 'feedback',
-          title: '提交建议',
-          icon: 'chatbubble-outline',
-          hasArrow: true,
-          gradient: ['#FB923C', '#FDBA74'],
-          description: '意见反馈和建议',
-        },
-      ]
-    },
-    {
-      title: '法律与隐私',
-      items: [
-        {
-          id: 'terms',
-          title: '服务条款',
-          icon: 'document-text-outline',
-          hasArrow: true,
-          gradient: ['#94A3B8', '#CBD5E1'],
-          description: '查看服务条款',
-        },
-        {
-          id: 'privacy',
-          title: '隐私政策',
-          icon: 'lock-closed-outline',
-          hasArrow: true,
-          gradient: ['#6B7280', '#9CA3AF'],
-          description: '隐私保护政策',
-        },
-      ]
-    },
-    {
-      title: '',
-      items: [
-        {
-          id: 'logout',
-          title: '退出登录',
-          icon: 'log-out-outline',
-          hasArrow: false,
-          isDestructive: true,
-          gradient: ['#F87171', '#FCA5A5'],
-          description: '退出当前账号',
-        },
-      ]
+      id: 'support',
+      title: t('item_support'),
+      icon: 'help-buoy-outline',
+      color: theme.colors.warning,
+      description: t('item_support_desc'),
     },
   ];
 
   const handleItemPress = (itemId: string) => {
     switch (itemId) {
       case 'account':
-        Alert.alert('我的账号', '手机号、微信、QQ绑定管理');
+        navigation.navigate('Account');
         break;
       case 'membership':
-        Alert.alert('会员中心', '购买会员享受更多权益');
+        Alert.alert(t('alert_membership'), t('alert_membership_msg'));
         break;
-      case 'notifications':
-        navigation.navigate('NotificationSettings');
-        break;
-      case 'language':
-        Alert.alert('选择语言', '可选择：English、简体中文、繁體中文等');
-        break;
-      case 'bluetooth':
-        navigation.navigate('BluetoothDebug');
-        break;
-      case 'bletest':
-        navigation.navigate('BleTest');
-        break;
-      case 'orders':
-        Alert.alert('订单信息', '查看购买历史和订单详情');
-        break;
-      case 'guide':
-        Alert.alert('操作指南', '查看应用使用教程');
-        break;
-      case 'feedback':
-        Alert.alert('提交建议', '向我们提供宝贵的意见和建议');
+      case 'settings':
+        navigation.navigate('SettingsHub');
         break;
       case 'support':
-        Alert.alert('打赏应用', '支持应用开发，感谢您的支持');
-        break;
-      case 'invite':
-        Alert.alert('邀请好友', '分享邀请码，获得奖励');
-        break;
-      case 'terms':
-        Alert.alert('服务条款', '查看应用服务条款');
-        break;
-      case 'privacy':
-        Alert.alert('隐私政策', '查看隐私保护政策');
-        break;
-      case 'logout':
-        Alert.alert(
-          '退出登录',
-          '确定要退出当前账号吗？',
-          [
-            { text: '取消', style: 'cancel' },
-            { text: '确定', style: 'destructive', onPress: () => console.log('Logout') },
-          ]
-        );
+        navigation.navigate('Support');
         break;
       default:
         break;
@@ -235,17 +86,17 @@ const ProfileScreen = ({ navigation }: any) => {
   };
 
   const handleAvatarPress = () => {
-    Alert.alert('更换头像', '选择头像来源', [
-      { text: '取消', style: 'cancel' },
-      { text: '相册', onPress: () => console.log('Select from gallery') },
-      { text: '拍照', onPress: () => console.log('Take photo') },
+    Alert.alert(t('item_account'), t('item_account_desc'), [
+      { text: t('action_cancel'), style: 'cancel' },
+      { text: t('action_album'), onPress: () => console.log('Select from gallery') },
+      { text: t('action_camera'), onPress: () => console.log('Take photo') },
     ]);
   };
 
   const handleNicknamePress = () => {
     Alert.prompt(
-      '修改昵称',
-      '请输入新的昵称',
+      t('prompt_nickname'),
+      t('prompt_nickname_msg'),
       (text) => {
         if (text && text.trim()) {
           setUserInfo(prev => ({ ...prev, nickname: text.trim() }));
@@ -260,7 +111,7 @@ const ProfileScreen = ({ navigation }: any) => {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>我的</Text>
+        <Text style={styles.headerTitle}>{t('profile_title')}</Text>
       </View>
 
       {/* Enhanced User Info */}
@@ -280,110 +131,67 @@ const ProfileScreen = ({ navigation }: any) => {
               <Icon name="camera" size={14} color={theme.colors.surface} />
             </View>
           </TouchableOpacity>
-          
+
           <View style={styles.userInfo}>
             <TouchableOpacity style={styles.nicknameContainer} onPress={handleNicknamePress}>
               <Text style={styles.nickname}>{userInfo.nickname}</Text>
               <Icon name="pencil" size={14} color={theme.colors.textSecondary} />
             </TouchableOpacity>
-            <Text style={styles.userDescription}>健康管理专家 · 会员用户</Text>
+            <Text style={styles.userDescription}>{t('user_desc')}</Text>
           </View>
         </View>
-        
+
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>21</Text>
-            <Text style={styles.statLabel}>记录天数</Text>
+            <Text style={styles.statLabel}>{t('stat_record_days')}</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
             <Text style={styles.statValue}>85</Text>
-            <Text style={styles.statLabel}>健康评分</Text>
+            <Text style={styles.statLabel}>{t('stat_health_score')}</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
             <Text style={styles.statValue}>3</Text>
-            <Text style={styles.statLabel}>已邀请</Text>
+            <Text style={styles.statLabel}>{t('stat_invited')}</Text>
           </View>
         </View>
       </View>
 
-      {/* Enhanced Profile Sections */}
-      {profileSections.map((section, sectionIndex) => (
-        <View key={sectionIndex} style={styles.sectionContainer}>
-          {section.title ? (
-            <Text style={styles.sectionTitle}>{section.title}</Text>
-          ) : null}
-          
-          <View style={[
-            styles.itemsContainer,
-            section.title === '' && styles.destructiveSection
-          ]}>
-            {section.items.map((item, itemIndex) => (
-              <TouchableOpacity
-                key={item.id}
-                style={[
-                  styles.profileItem,
-                  itemIndex === 0 && styles.firstItem,
-                  itemIndex === section.items.length - 1 && styles.lastItem,
-                  item.isDestructive && styles.destructiveItem,
-                ]}
-                onPress={() => handleItemPress(item.id)}
-                activeOpacity={0.8}
-              >
-                <View style={styles.itemLeft}>
-                  <View style={[
-                    styles.iconGradientContainer,
-                    item.isDestructive ? styles.destructiveIcon : styles.normalIcon
-                  ]}>
-                    <Icon
-                      name={item.icon}
-                      size={18}
-                      color={theme.colors.surface}
-                    />
-                  </View>
-                  <View style={styles.itemTextContainer}>
-                    <Text style={[
-                      styles.itemTitle,
-                      item.isDestructive && styles.destructiveText
-                    ]}>
-                      {item.title}
-                    </Text>
-                    <Text style={styles.itemDescription}>
-                      {item.description}
-                    </Text>
-                    {item.subtitle && (
-                      <Text style={styles.itemSubtitle}>{item.subtitle}</Text>
-                    )}
-                  </View>
-                </View>
-                
-                <View style={styles.itemRight}>
-                  {item.badge && (
-                    <View style={styles.badge}>
-                      <Icon name="diamond" size={10} color={theme.colors.surface} />
-                      <Text style={styles.badgeText}>{item.badge}</Text>
-                    </View>
-                  )}
-                  {item.hasArrow && (
-                    <View style={styles.arrowContainer}>
-                      <Icon
-                        name="chevron-forward"
-                        size={16}
-                        color={theme.colors.textSecondary}
-                      />
-                    </View>
-                  )}
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-      ))}
+      {/* Simplified Profile Items (4 items only) */}
+      <View style={styles.profileItemsContainer}>
+        {profileItems.map((item, index) => (
+          <TouchableOpacity
+            key={item.id}
+            style={[
+              styles.profileItemRow,
+              index === profileItems.length - 1 && styles.profileItemRowLast,
+            ]}
+            onPress={() => handleItemPress(item.id)}
+            activeOpacity={0.8}
+          >
+            <View style={[styles.profileItemIcon, { backgroundColor: item.color + '15' }]}>
+              <Icon name={item.icon} size={22} color={item.color} />
+            </View>
+            <View style={styles.profileItemContent}>
+              <Text style={styles.profileItemTitle}>{item.title}</Text>
+              <Text style={styles.profileItemDesc}>{item.description}</Text>
+            </View>
+            {item.badge && (
+              <View style={styles.profileItemBadge}>
+                <Icon name="diamond" size={10} color={theme.colors.surface} />
+                <Text style={styles.profileItemBadgeText}>{item.badge}</Text>
+              </View>
+            )}
+            <Icon name="chevron-forward" size={20} color={theme.colors.textSecondary} />
+          </TouchableOpacity>
+        ))}
+      </View>
 
       {/* Version Info */}
       <View style={styles.versionContainer}>
-        <Text style={styles.versionText}>BrainCare v1.0.0</Text>
+        <Text style={styles.versionText}>BrainCare v3.0.0</Text>
       </View>
     </ScrollView>
   );
@@ -634,6 +442,62 @@ const styles = StyleSheet.create({
   versionText: {
     fontSize: theme.fontSize.sm,
     color: theme.colors.textLight,
+  },
+
+  // === NEW SIMPLIFIED PROFILE ITEMS STYLES ===
+  profileItemsContainer: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    marginHorizontal: theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
+    ...theme.shadows.sm,
+    overflow: 'hidden',
+  },
+  profileItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: theme.spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.borderLight,
+  },
+  profileItemRowLast: {
+    borderBottomWidth: 0,
+  },
+  profileItemIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: theme.spacing.md,
+  },
+  profileItemContent: {
+    flex: 1,
+  },
+  profileItemTitle: {
+    fontSize: theme.fontSize.md,
+    fontWeight: theme.fontWeight.medium,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.xs,
+  },
+  profileItemDesc: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.textSecondary,
+  },
+  profileItemBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.healthPurple,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.pill,
+    marginRight: theme.spacing.sm,
+  },
+  profileItemBadgeText: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.surface,
+    fontWeight: theme.fontWeight.bold,
+    marginLeft: theme.spacing.xs,
   },
 });
 

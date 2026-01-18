@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { theme } from '../styles/theme';
+import { useLanguage } from '../i18n/LanguageContext';
 import CustomerService from '../components/CustomerService';
 import StandardTag from '../components/StandardTag';
 import StandardIconContainer from '../components/StandardIconContainer';
@@ -25,10 +26,11 @@ interface TodoItem {
 type FavoriteTab = 'plans' | 'courses' | 'therapy' | 'offline';
 
 const HomeScreen = ({ navigation }: any) => {
+  const { t, language, toggleLanguage } = useLanguage();
   const [todos, setTodos] = useState<TodoItem[]>([
-    { id: '1', text: '完成今日脑电评估', completed: false },
-    { id: '2', text: '听30分钟Alpha脑波音乐', completed: true },
-    { id: '3', text: '记录睡眠时间', completed: false },
+    { id: '1', text: t('sample_todo_1'), completed: false },
+    { id: '2', text: t('sample_todo_2'), completed: true },
+    { id: '3', text: t('sample_todo_3'), completed: false },
   ]);
   const [showCustomerService, setShowCustomerService] = useState(false);
   const [activeFavoriteTab, setActiveFavoriteTab] = useState<FavoriteTab>('plans');
@@ -36,28 +38,28 @@ const HomeScreen = ({ navigation }: any) => {
 
   const favoriteData = {
     plans: [
-      { id: '1', title: '专注力提升计划', subtitle: '通过脑电训练提升专注力', tag: '计划', duration: '14天', favorited: true },
-      { id: '2', title: '21天早起计划', subtitle: '养成健康的作息习惯', tag: '计划', duration: '21天', favorited: false },
+      { id: '1', title: t('plan_focus_title'), subtitle: t('plan_focus_subtitle'), tag: t('tag_plan'), duration: t('duration_14days'), favorited: true },
+      { id: '2', title: t('plan_early_rise_title'), subtitle: t('plan_early_rise_subtitle'), tag: t('tag_plan'), duration: t('duration_21days'), favorited: false },
     ],
     courses: [
-      { id: '3', title: 'CBT-I睡眠改善课程', subtitle: '21天养成好睡眠习惯', tag: '课程', duration: '7/21天', favorited: true },
-      { id: '4', title: '冥想入门课程', subtitle: '学习正念冥想技巧', tag: '课程', duration: '10课时', favorited: false },
+      { id: '3', title: t('course_sleep_title'), subtitle: t('course_sleep_subtitle'), tag: t('tag_course'), duration: t('duration_7_21days'), favorited: true },
+      { id: '4', title: t('course_meditation_title'), subtitle: t('course_meditation_subtitle'), tag: t('tag_course'), duration: t('duration_10lessons'), favorited: false },
     ],
     therapy: [
-      { id: '5', title: 'Alpha脑波音乐', subtitle: '提升专注力的声波疗法', tag: '声疗', duration: '30分钟', favorited: true },
-      { id: '6', title: '白噪音助眠', subtitle: '改善睡眠质量', tag: '声疗', duration: '60分钟', favorited: false },
+      { id: '5', title: t('therapy_alpha_title'), subtitle: t('therapy_alpha_subtitle'), tag: t('tag_therapy'), duration: t('duration_30mins'), favorited: true },
+      { id: '6', title: t('therapy_white_noise_title'), subtitle: t('therapy_white_noise_subtitle'), tag: t('tag_therapy'), duration: t('duration_60mins'), favorited: false },
     ],
     offline: [
-      { id: '7', title: '脑电理疗中心', subtitle: '专业脑电设备体验', tag: '线下', duration: '预约', favorited: false },
-      { id: '8', title: '心理咨询师', subtitle: '一对一心理健康咨询', tag: '线下', duration: '1小时', favorited: true },
+      { id: '7', title: t('offline_center_title'), subtitle: t('offline_center_subtitle'), tag: t('tag_offline'), duration: t('duration_appointment'), favorited: false },
+      { id: '8', title: t('offline_counseling_title'), subtitle: t('offline_counseling_subtitle'), tag: t('tag_offline'), duration: t('duration_1hour'), favorited: true },
     ],
   };
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return '上午好';
-    if (hour < 18) return '下午好';
-    return '晚上好';
+    if (hour < 12) return t('good_morning');
+    if (hour < 18) return t('good_afternoon');
+    return t('good_evening');
   };
 
   const getCurrentDate = () => {
@@ -67,13 +69,31 @@ const HomeScreen = ({ navigation }: any) => {
 
   // V2 精修: 标签类型映射函数
   const getTagType = (tag: string) => {
-    const tagMapping: { [key: string]: any } = {
-      '计划': 'lifestyle',
-      '课程': 'cognitive', 
-      '声疗': 'brainwave',
-      '线下': 'psychology',
-    };
-    return tagMapping[tag] || 'lifestyle';
+    // Inverse mapping or check values. Since tag is now localized,
+    // we should rely on the valid keys from translations or perform a reverse lookup.
+    // For simplicity, we'll map the localized string back to type if possible,
+    // or better: refactor the data structure to store type separately.
+    // Given the constraints, I'll allow 'tag' to be used if it matches directly,
+    // or fix this logic to be language agnostic.
+    // Hack: check if tag matches any of the known values for current language or fallback.
+    return 'lifestyle';
+  };
+  // Better approach: Since getTagType in original code mapped Chinese string to style,
+  // and we changed data to usage `t('tag_plan')`, we should probably just pass the TYPE in data
+  // and map TYPE to text for display. But for now, let's keep it simple.
+  // Actually, let's just use a simple mapping based on the Translation Key if possible.
+  // But wait, the item.tag is passed.
+  // Let's rewrite `favoriteData` in a way that we can derive style.
+  // For now, I will skip complex logic and just return 'lifestyle' to avoid crash,
+  // or simple check.
+
+  // Re-implementing simplified getTagType for demo
+  const getTagStyleType = (tag: string) => {
+    if (tag === t('tag_plan')) return 'lifestyle';
+    if (tag === t('tag_course')) return 'cognitive';
+    if (tag === t('tag_therapy')) return 'brainwave';
+    if (tag === t('tag_offline')) return 'psychology';
+    return 'lifestyle';
   };
 
   const toggleTodo = (id: string) => {
@@ -116,19 +136,37 @@ const HomeScreen = ({ navigation }: any) => {
   const [selectedCalendarDate, setSelectedCalendarDate] = useState(new Date());
   const [calendarMonth, setCalendarMonth] = useState(new Date());
 
+  // Format date based on language
+  const formatCalendarDate = (date: Date, monthNames: string[]) => {
+    if (language === 'zh') {
+      return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+    }
+    return `${monthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+  };
+
+  // Format header date (year + month)
+  const formatHeaderMonth = (year: number, monthIndex: number, monthNames: string[]) => {
+    if (language === 'zh') {
+      return `${year}年${monthNames[monthIndex]}`;
+    }
+    return `${monthNames[monthIndex]} ${year}`;
+  };
+
   // 日期选择器内联组件
   const DatePickerCalendarInline = () => {
-    const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+    const weekDays = [
+      t('sun'), t('mon'), t('tue'), t('wed'), t('thu'), t('fri'), t('sat')
+    ];
     const months = [
-      '一月', '二月', '三月', '四月', '五月', '六月',
-      '七月', '八月', '九月', '十月', '十一月', '十二月'
+      t('jan'), t('feb'), t('mar'), t('apr'), t('may'), t('jun'),
+      t('jul'), t('aug'), t('sep'), t('oct'), t('nov'), t('dec')
     ];
 
     // 获取日历数据
     const getCalendarData = () => {
       const year = calendarMonth.getFullYear();
       const month = calendarMonth.getMonth();
-      
+
       // 当月第一天和最后一天
       const firstDay = new Date(year, month, 1);
       const lastDay = new Date(year, month + 1, 0);
@@ -156,16 +194,16 @@ const HomeScreen = ({ navigation }: any) => {
       // 添加当月的日期
       const today = new Date();
       for (let date = 1; date <= daysInMonth; date++) {
-        const isToday = 
+        const isToday =
           today.getDate() === date &&
           today.getMonth() === month &&
           today.getFullYear() === year;
-        
-        const isSelected = 
+
+        const isSelected =
           selectedCalendarDate.getDate() === date &&
           selectedCalendarDate.getMonth() === month &&
           selectedCalendarDate.getFullYear() === year;
-        
+
         calendarDays.push({
           date,
           month,
@@ -210,10 +248,10 @@ const HomeScreen = ({ navigation }: any) => {
 
     const handleDayPress = (day: any) => {
       if (!day.isCurrentMonth) return;
-      
+
       const newDate = new Date(day.year, day.month, day.date);
       setSelectedCalendarDate(newDate);
-      
+
       const dateString = `${day.year}-${(day.month + 1).toString().padStart(2, '0')}-${day.date.toString().padStart(2, '0')}`;
       onDateChange(dateString);
     };
@@ -223,19 +261,19 @@ const HomeScreen = ({ navigation }: any) => {
     return (
       <View style={styles.inlineCalendar}>
         <Text style={styles.currentDateText}>
-          {selectedCalendarDate.getFullYear()}年{selectedCalendarDate.getMonth() + 1}月{selectedCalendarDate.getDate()}日
+          {formatCalendarDate(selectedCalendarDate, months)}
         </Text>
-        
+
         {/* 月份导航 */}
         <View style={styles.calendarHeader}>
           <TouchableOpacity onPress={() => navigateMonth('prev')} style={styles.calendarNavButton}>
             <Icon name="chevron-back" size={20} color={theme.colors.primary} />
           </TouchableOpacity>
-          
+
           <Text style={styles.calendarMonthText}>
-            {calendarMonth.getFullYear()}年{months[calendarMonth.getMonth()]}
+            {formatHeaderMonth(calendarMonth.getFullYear(), calendarMonth.getMonth(), months)}
           </Text>
-          
+
           <TouchableOpacity onPress={() => navigateMonth('next')} style={styles.calendarNavButton}>
             <Icon name="chevron-forward" size={20} color={theme.colors.primary} />
           </TouchableOpacity>
@@ -287,18 +325,31 @@ const HomeScreen = ({ navigation }: any) => {
         <View style={styles.headerContent}>
           <View style={styles.greetingContainer}>
             <Icon name="sunny-outline" size={24} color={theme.colors.secondary} style={styles.weatherIcon} />
-            <Text style={styles.greeting}>{getGreeting()}，用户</Text>
+            <Text style={styles.greeting}>{getGreeting()}{language === 'zh' ? '，' : ', '}{t('user')}</Text>
           </View>
           <Text style={styles.date}>{getCurrentDate()}</Text>
+          {/* Status Chip */}
+          <View style={styles.statusChip}>
+            <Icon name="moon-outline" size={14} color={theme.colors.textSecondary} />
+            <Text style={styles.statusChipText}>
+              {t('last_night_sleep')}: 7h 12m • {t('sleep_quality')}: {t('quality_good')}
+            </Text>
+          </View>
         </View>
         <View style={styles.headerButtons}>
-          <TouchableOpacity 
+          <TouchableOpacity
+            style={styles.languageBtn}
+            onPress={toggleLanguage}
+          >
+            <Text style={styles.languageBtnText}>{language === 'zh' ? 'En' : '中'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
             style={styles.testCalendarBtn}
             onPress={() => navigation.navigate('CalendarTest')}
           >
             <Icon name="calendar-outline" size={20} color={theme.colors.primary} />
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.customerServiceBtn}
             onPress={() => setShowCustomerService(true)}
           >
@@ -307,23 +358,73 @@ const HomeScreen = ({ navigation }: any) => {
         </View>
       </View>
 
+      {/* Sleep Summary Card - NEW */}
+      <TouchableOpacity
+        style={styles.sleepSummaryCard}
+        onPress={() => navigation.navigate('Sleep')}
+        activeOpacity={0.7}
+      >
+        <View style={styles.sleepSummaryHeader}>
+          <View style={styles.sleepSummaryIcon}>
+            <Icon name="bed-outline" size={20} color={theme.colors.primary} />
+          </View>
+          <Text style={styles.sleepSummaryTitle}>{t('sleep_summary')}</Text>
+          <Icon name="chevron-forward" size={18} color={theme.colors.textSecondary} />
+        </View>
+        <View style={styles.sleepSummaryContent}>
+          <View style={styles.sleepMetric}>
+            <Text style={styles.sleepMetricValue}>7h 12m</Text>
+            <Text style={styles.sleepMetricLabel}>{t('duration')}</Text>
+          </View>
+          <View style={styles.sleepMetricDivider} />
+          <View style={styles.sleepMetric}>
+            <Text style={[styles.sleepMetricValue, { color: theme.colors.success }]}>{t('quality_good')}</Text>
+            <Text style={styles.sleepMetricLabel}>{t('sleep_quality')}</Text>
+          </View>
+          <View style={styles.sleepMetricDivider} />
+          <View style={styles.sleepMetric}>
+            <Text style={styles.sleepMetricValue}>23:15</Text>
+            <Text style={styles.sleepMetricLabel}>{t('bedtime')}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+
+      {/* Pinned Actions - NEW */}
+      <View style={styles.pinnedActions}>
+        <Text style={styles.pinnedActionsTitle}>{t('pinned_actions')}</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.pinnedActionsScroll}>
+          <TouchableOpacity style={styles.pinnedActionButton}>
+            <Icon name="pulse" size={18} color={theme.colors.primary} />
+            <Text style={styles.pinnedActionText}>{t('action_complete_assessment')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.pinnedActionButton}>
+            <Icon name="leaf" size={18} color={theme.colors.success} />
+            <Text style={styles.pinnedActionText}>{t('action_book_therapy')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.pinnedActionButton}>
+            <Icon name="musical-notes" size={18} color={theme.colors.info} />
+            <Text style={styles.pinnedActionText}>{t('action_start_meditation')}</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
+
       {/* Health Suggestion Card */}
       <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{t('daily_tip_title')}</Text>
         <View style={styles.healthSuggestionCard}>
           <View style={styles.suggestionHeader}>
-            <StandardIconContainer 
-              iconName="bulb" 
+            <StandardIconContainer
+              iconName="bulb"
               iconColor={theme.colors.secondary}
               iconSize={20}
               size={40}
             />
             <View style={styles.suggestionContent}>
-              <Text style={styles.suggestionTitle}>今日健康建议</Text>
-              <Text style={styles.suggestionText}>基于您的睡眠和心理状态数据，建议进行15分钟的冥想练习</Text>
+              <Text style={styles.suggestionText}>{t('health_suggestion_text')}</Text>
             </View>
           </View>
           <TouchableOpacity style={styles.suggestionAction}>
-            <Text style={styles.suggestionActionText}>立即开始</Text>
+            <Text style={styles.suggestionActionText}>{t('tip_start')}</Text>
             <Icon name="arrow-forward" size={14} color={theme.colors.primary} />
           </TouchableOpacity>
         </View>
@@ -331,7 +432,7 @@ const HomeScreen = ({ navigation }: any) => {
 
       {/* Todo List */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>日程</Text>
+        <Text style={styles.sectionTitle}>{t('schedule_title')}</Text>
         <View style={styles.todoContainer}>
           {todos.map((todo) => (
             <View key={todo.id} style={[
@@ -349,7 +450,7 @@ const HomeScreen = ({ navigation }: any) => {
                   <Icon name="checkmark" size={16} color={theme.colors.surface} />
                 )}
               </TouchableOpacity>
-              
+
               <TextInput
                 style={[
                   styles.todoText,
@@ -360,7 +461,7 @@ const HomeScreen = ({ navigation }: any) => {
                 multiline
                 editable={!todo.completed}
               />
-              
+
               <TouchableOpacity
                 style={[
                   styles.reminderBtn,
@@ -369,10 +470,10 @@ const HomeScreen = ({ navigation }: any) => {
                 onPress={() => setReminder(todo.id)}
                 disabled={todo.completed}
               >
-                <Icon 
-                  name={todo.completed ? "checkmark-circle" : "time-outline"} 
-                  size={20} 
-                  color={todo.completed ? theme.colors.success : theme.colors.textSecondary} 
+                <Icon
+                  name={todo.completed ? "checkmark-circle" : "time-outline"}
+                  size={20}
+                  color={todo.completed ? theme.colors.success : theme.colors.textSecondary}
                 />
               </TouchableOpacity>
             </View>
@@ -382,32 +483,32 @@ const HomeScreen = ({ navigation }: any) => {
 
       {/* My Favorites */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>我的收藏</Text>
-        
+        <Text style={styles.sectionTitle}>{t('favorites_title')}</Text>
+
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.tab, activeFavoriteTab === 'plans' && styles.tabActive]}
             onPress={() => setActiveFavoriteTab('plans')}
           >
-            <Text style={[styles.tabText, activeFavoriteTab === 'plans' && styles.tabTextActive]}>计划</Text>
+            <Text style={[styles.tabText, activeFavoriteTab === 'plans' && styles.tabTextActive]}>{t('fav_plans')}</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.tab, activeFavoriteTab === 'courses' && styles.tabActive]}
             onPress={() => setActiveFavoriteTab('courses')}
           >
-            <Text style={[styles.tabText, activeFavoriteTab === 'courses' && styles.tabTextActive]}>课程</Text>
+            <Text style={[styles.tabText, activeFavoriteTab === 'courses' && styles.tabTextActive]}>{t('fav_courses')}</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.tab, activeFavoriteTab === 'therapy' && styles.tabActive]}
             onPress={() => setActiveFavoriteTab('therapy')}
           >
-            <Text style={[styles.tabText, activeFavoriteTab === 'therapy' && styles.tabTextActive]}>声疗</Text>
+            <Text style={[styles.tabText, activeFavoriteTab === 'therapy' && styles.tabTextActive]}>{t('fav_therapy')}</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.tab, activeFavoriteTab === 'offline' && styles.tabActive]}
             onPress={() => setActiveFavoriteTab('offline')}
           >
-            <Text style={[styles.tabText, activeFavoriteTab === 'offline' && styles.tabTextActive]}>线下服务</Text>
+            <Text style={[styles.tabText, activeFavoriteTab === 'offline' && styles.tabTextActive]}>{t('fav_offline')}</Text>
           </TouchableOpacity>
         </ScrollView>
 
@@ -417,18 +518,18 @@ const HomeScreen = ({ navigation }: any) => {
               <View style={styles.cardHeader}>
                 <Text style={styles.cardTitle}>{item.title}</Text>
                 <TouchableOpacity>
-                  <Icon 
-                    name={item.favorited ? "bookmark" : "bookmark-outline"} 
-                    size={20} 
-                    color={item.favorited ? theme.colors.error : theme.colors.textSecondary} 
+                  <Icon
+                    name={item.favorited ? "bookmark" : "bookmark-outline"}
+                    size={20}
+                    color={item.favorited ? theme.colors.error : theme.colors.textSecondary}
                   />
                 </TouchableOpacity>
               </View>
               <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
               <View style={styles.cardFooter}>
-                <StandardTag 
-                  type={getTagType(item.tag)} 
-                  text={item.tag} 
+                <StandardTag
+                  type={getTagStyleType(item.tag)}
+                  text={item.tag}
                 />
                 <Text style={styles.cardDuration}>{item.duration}</Text>
               </View>
@@ -444,35 +545,35 @@ const HomeScreen = ({ navigation }: any) => {
         animationType="fade"
         onRequestClose={() => setShowCalendar(false)}
       >
-          <View style={styles.datePickerModal}>
-            <View style={styles.datePickerContainer}>
-              <View style={styles.datePickerHeader}>
-                <Text style={styles.datePickerTitle}>选择日期</Text>
-              </View>
-              <View style={styles.datePickerContent}>
-                <DatePickerCalendarInline />
-              </View>
-              <View style={styles.datePickerButtons}>
-                <TouchableOpacity 
-                  style={styles.datePickerCancel}
-                  onPress={() => setShowCalendar(false)}
-                >
-                  <Text style={styles.datePickerCancelText}>取消</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.datePickerConfirm}
-                  onPress={() => setShowCalendar(false)}
-                >
-                  <Text style={styles.datePickerConfirmText}>确定</Text>
-                </TouchableOpacity>
-              </View>
+        <View style={styles.datePickerModal}>
+          <View style={styles.datePickerContainer}>
+            <View style={styles.datePickerHeader}>
+              <Text style={styles.datePickerTitle}>{t('select_date')}</Text>
+            </View>
+            <View style={styles.datePickerContent}>
+              <DatePickerCalendarInline />
+            </View>
+            <View style={styles.datePickerButtons}>
+              <TouchableOpacity
+                style={styles.datePickerCancel}
+                onPress={() => setShowCalendar(false)}
+              >
+                <Text style={styles.datePickerCancelText}>{t('cancel')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.datePickerConfirm}
+                onPress={() => setShowCalendar(false)}
+              >
+                <Text style={styles.datePickerConfirmText}>{t('confirm')}</Text>
+              </TouchableOpacity>
             </View>
           </View>
-        </Modal>
+        </View>
+      </Modal>
 
 
 
-      <CustomerService 
+      <CustomerService
         visible={showCustomerService}
         onClose={() => setShowCustomerService(false)}
       />
@@ -527,6 +628,20 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.round,
     backgroundColor: theme.colors.surfaceElevated,
     ...theme.shadows.xs,
+  },
+  languageBtn: {
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.borderRadius.round,
+    backgroundColor: theme.colors.surfaceElevated,
+    ...theme.shadows.xs,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  languageBtnText: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.bold,
+    color: theme.colors.primary,
   },
   customerServiceBtn: {
     padding: theme.spacing.md,
@@ -1344,6 +1459,109 @@ const styles = StyleSheet.create({
     fontWeight: theme.fontWeight.bold,
     color: theme.colors.primary,
     marginBottom: theme.spacing.xl,
+  },
+
+  // === NEW REDESIGN STYLES ===
+
+  // Status Chip
+  statusChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.background,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.pill,
+    marginTop: theme.spacing.xs,
+    gap: theme.spacing.xs,
+  },
+  statusChipText: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.textSecondary,
+  },
+
+  // Sleep Summary Card
+  sleepSummaryCard: {
+    backgroundColor: theme.colors.surface,
+    marginHorizontal: theme.spacing.lg,
+    marginTop: theme.spacing.md,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.md,
+    ...theme.shadows.sm,
+  },
+  sleepSummaryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing.md,
+  },
+  sleepSummaryIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: theme.colors.primary + '15',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: theme.spacing.sm,
+  },
+  sleepSummaryTitle: {
+    flex: 1,
+    fontSize: theme.fontSize.md,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.text,
+  },
+  sleepSummaryContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+  },
+  sleepMetric: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  sleepMetricValue: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: theme.fontWeight.bold,
+    color: theme.colors.text,
+  },
+  sleepMetricLabel: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.textSecondary,
+    marginTop: theme.spacing.xs,
+  },
+  sleepMetricDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: theme.colors.border,
+  },
+
+  // Pinned Actions
+  pinnedActions: {
+    marginTop: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.lg,
+  },
+  pinnedActionsTitle: {
+    fontSize: theme.fontSize.md,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.text,
+    marginBottom: theme.spacing.sm,
+  },
+  pinnedActionsScroll: {
+    flexDirection: 'row',
+  },
+  pinnedActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.pill,
+    marginRight: theme.spacing.sm,
+    ...theme.shadows.xs,
+    gap: theme.spacing.xs,
+  },
+  pinnedActionText: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.medium,
+    color: theme.colors.text,
   },
 });
 

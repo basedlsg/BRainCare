@@ -12,6 +12,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { theme } from '../styles/theme';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface ReminderItem {
   id: string;
@@ -23,10 +24,11 @@ interface ReminderItem {
 }
 
 const NotificationSettingsScreen = ({ navigation }: any) => {
+  const { t } = useLanguage();
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [vibrationEnabled, setVibrationEnabled] = useState(true);
   const [showTimePicker, setShowTimePicker] = useState<string | null>(null);
-  
+
   const [reminders, setReminders] = useState<ReminderItem[]>([
     {
       id: '1',
@@ -71,16 +73,16 @@ const NotificationSettingsScreen = ({ navigation }: any) => {
   ]);
 
   const toggleReminder = (id: string) => {
-    setReminders(prev => 
-      prev.map(item => 
+    setReminders(prev =>
+      prev.map(item =>
         item.id === id ? { ...item, enabled: !item.enabled } : item
       )
     );
   };
 
   const updateReminderTime = (id: string, newTime: Date) => {
-    setReminders(prev => 
-      prev.map(item => 
+    setReminders(prev =>
+      prev.map(item =>
         item.id === id ? { ...item, time: newTime } : item
       )
     );
@@ -102,16 +104,16 @@ const NotificationSettingsScreen = ({ navigation }: any) => {
     if (Platform.OS === 'android') {
       setShowTimePicker(null);
     }
-    
+
     if (event.type === 'dismissed') {
       setShowTimePicker(null);
       return;
     }
-    
+
     if (selectedTime && showTimePicker) {
       updateReminderTime(showTimePicker, selectedTime);
     }
-    
+
     if (Platform.OS === 'ios') {
       setShowTimePicker(null);
     }
@@ -121,29 +123,29 @@ const NotificationSettingsScreen = ({ navigation }: any) => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
           <Icon name="chevron-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>声音和通知</Text>
+        <Text style={styles.headerTitle}>{t('title_notification_settings')}</Text>
         <View style={styles.placeholder} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* General Settings */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>通用设置</Text>
-          
+          <Text style={styles.sectionTitle}>{t('ns_general')}</Text>
+
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
               <View style={styles.iconContainer}>
                 <Icon name="volume-high-outline" size={20} color={theme.colors.primary} />
               </View>
               <View style={styles.settingTextContainer}>
-                <Text style={styles.settingTitle}>声音</Text>
-                <Text style={styles.settingDescription}>开启通知声音</Text>
+                <Text style={styles.settingTitle}>{t('ns_sound')}</Text>
+                <Text style={styles.settingDescription}>{t('ns_sound_desc')}</Text>
               </View>
             </View>
             <Switch
@@ -160,8 +162,8 @@ const NotificationSettingsScreen = ({ navigation }: any) => {
                 <Icon name="phone-portrait-outline" size={20} color={theme.colors.primary} />
               </View>
               <View style={styles.settingTextContainer}>
-                <Text style={styles.settingTitle}>振动</Text>
-                <Text style={styles.settingDescription}>开启通知振动</Text>
+                <Text style={styles.settingTitle}>{t('ns_vibrate')}</Text>
+                <Text style={styles.settingDescription}>{t('ns_vibrate_desc')}</Text>
               </View>
             </View>
             <Switch
@@ -175,63 +177,87 @@ const NotificationSettingsScreen = ({ navigation }: any) => {
 
         {/* Reminder Settings */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>提醒设置</Text>
-          
-          {reminders.map((reminder, index) => (
-            <View key={reminder.id} style={styles.reminderItem}>
-              <View style={styles.reminderLeft}>
-                <View style={styles.iconContainer}>
-                  <Icon name={reminder.icon} size={20} color={theme.colors.primary} />
+          <Text style={styles.sectionTitle}>{t('ns_reminders')}</Text>
+
+          {
+            reminders.map((reminder, index) => (
+              // Ideally we should map reminder dynamic content too, but for now let's just use the keys if we can
+              // The state has them hardcoded. We need to update the state initialization or derived usage.
+              // Updating state initialization:
+              // But wait, state is initialized once. If lang changes, it won't update.
+              // We should store KEYS in state, and translate in render.
+              // BUT, that requires big refactor.
+              // Quick fix: Just update the specific render part if possible, BUT the state holds the title/description.
+              // So I must refactor the state or the rendering.
+              // Let's refactor the rendering to look up translations based on ID if possible?
+              // Or better, just update the state initialization with translated values? NO, that doesn't react to change.
+              // I'll change the render to ignore the state title/desc and lookup valid ones.
+              <View key={reminder.id} style={styles.reminderItem}>
+                <View style={styles.reminderLeft}>
+                  <View style={styles.iconContainer}>
+                    <Icon name={reminder.icon} size={20} color={theme.colors.primary} />
+                  </View>
+                  <View style={styles.reminderTextContainer}>
+                    <Text style={styles.reminderTitle}>{
+                      reminder.id === '1' ? t('rem_water') :
+                        reminder.id === '2' ? t('rem_sport') :
+                          reminder.id === '3' ? t('rem_sleep') :
+                            reminder.id === '4' ? t('rem_meditation') :
+                              reminder.id === '5' ? t('rem_medicine') : reminder.title
+                    }</Text>
+                    <Text style={styles.reminderDescription}>{
+                      reminder.id === '1' ? t('rem_water_desc') :
+                        reminder.id === '2' ? t('rem_sport_desc') :
+                          reminder.id === '3' ? t('rem_sleep_desc') :
+                            reminder.id === '4' ? t('rem_meditation_desc') :
+                              reminder.id === '5' ? t('rem_medicine_desc') : reminder.description
+                    }</Text>
+                    {reminder.enabled && (
+                      <TouchableOpacity
+                        style={styles.timeButton}
+                        onPress={() => handleTimePress(reminder.id)}
+                      >
+                        <Icon name="time-outline" size={14} color={theme.colors.primary} />
+                        <Text style={styles.timeText}>{formatTime(reminder.time)}</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
                 </View>
-                <View style={styles.reminderTextContainer}>
-                  <Text style={styles.reminderTitle}>{reminder.title}</Text>
-                  <Text style={styles.reminderDescription}>{reminder.description}</Text>
-                  {reminder.enabled && (
-                    <TouchableOpacity 
-                      style={styles.timeButton}
-                      onPress={() => handleTimePress(reminder.id)}
-                    >
-                      <Icon name="time-outline" size={14} color={theme.colors.primary} />
-                      <Text style={styles.timeText}>{formatTime(reminder.time)}</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
+                <Switch
+                  value={reminder.enabled}
+                  onValueChange={() => toggleReminder(reminder.id)}
+                  trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+                  thumbColor={reminder.enabled ? theme.colors.surface : theme.colors.textSecondary}
+                />
               </View>
-              <Switch
-                value={reminder.enabled}
-                onValueChange={() => toggleReminder(reminder.id)}
-                trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
-                thumbColor={reminder.enabled ? theme.colors.surface : theme.colors.textSecondary}
-              />
-            </View>
-          ))}
-        </View>
+            ))
+          }
+        </View >
 
         {/* Tips */}
-        <View style={styles.tipsContainer}>
+        < View style={styles.tipsContainer} >
           <View style={styles.tipHeader}>
             <Icon name="information-circle-outline" size={20} color={theme.colors.primary} />
-            <Text style={styles.tipTitle}>温馨提示</Text>
+            <Text style={styles.tipTitle}>{t('ns_tips_title')}</Text>
           </View>
           <Text style={styles.tipText}>
-            1. 请确保已允许应用发送通知权限{'\n'}
-            2. 提醒时间可以通过点击时间进行修改{'\n'}
-            3. 关闭的提醒将不会发送通知{'\n'}
-            4. 建议根据个人作息合理设置提醒时间
+            {t('ns_tips_content')}
           </Text>
-        </View>
-      </ScrollView>
+        </View >
+      </ScrollView >
 
       {/* Time Picker */}
-      {showTimePicker && (
-        <DateTimePicker
-          value={reminders.find(r => r.id === showTimePicker)?.time || new Date()}
-          mode="time"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={handleTimeChange}
-        />
-      )}
-    </View>
+      {
+        showTimePicker && (
+          <DateTimePicker
+            value={reminders.find(r => r.id === showTimePicker)?.time || new Date()}
+            mode="time"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={handleTimeChange}
+          />
+        )
+      }
+    </View >
   );
 };
 
